@@ -1,1 +1,302 @@
+/* =====================================================
+   VARIÁVEIS GLOBAIS (CORES / TEMA)
+   ===================================================== */
+:root {
+  --iso-green: #068147;
+  --iso-dark: #045c32;
+  --card-bg: #ffffff;
+  --page-bg: linear-gradient(180deg, #f6fbf7 0%, #ffffff 100%);
+  --muted: #6b7280;
+}
 
+/* =====================================================
+   RESET / BASE
+   ===================================================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 18px;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  background: var(--page-bg);
+  color: #0b1320;
+}
+
+/* =====================================================
+   CABEÇALHO
+   ===================================================== */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.app-header img {
+  height: 42px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+}
+
+/* =====================================================
+   BARRA DE FILTROS
+   ===================================================== */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+select,
+button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #000;
+  background: #fff;
+  font-size: 14px;
+}
+
+button.primary {
+  background: var(--iso-green);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(44, 170, 75, 0.06);
+}
+
+.meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* =====================================================
+   GRID DO DASHBOARD
+   ===================================================== */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* =====================================================
+   CARDS
+   ===================================================== */
+.card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 22px rgba(12, 20, 30, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.card h2 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: var(--iso-dark);
+  font-weight: 600;
+}
+
+/* =====================================================
+   INDICADORES (CARDS SUPERIORES)
+   ===================================================== */
+.indicators {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.indicator {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 128, 64, 0.06),
+    rgba(13, 128, 64, 0.02)
+  );
+  border-radius: 15px;
+  padding: 8px 10px;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+}
+
+.indicator .value {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b4e1f;
+}
+
+.indicator .label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* =====================================================
+   GRÁFICOS
+   ===================================================== */
+.chart-wrap {
+  flex: 1;
+}
+
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 220px !important;
+}
+
+.horizontal-chart canvas {
+  height: 260px !important;
+}
+
+/* =====================================================
+   RODAPÉ
+   ===================================================== */
+footer {
+  margin-top: 18px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* =====================================================
+   RESPONSIVO
+   ===================================================== */
+@media (max-width: 1100px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-wrap canvas {
+    height: 230px !important;
+  }
+}
+
+.period-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.period-dropdown {
+  position: relative;
+  min-width: 280px;
+  font-size: 14px;
+}
+
+.period-selected {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-selected:hover {
+  border-color: #0969da;
+}
+
+.arrow {
+  font-size: 12px;
+}
+
+.period-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  padding: 8px;
+  display: none;
+  z-index: 20;
+}
+
+.period-dropdown.open .period-menu {
+  display: block;
+}
+
+.year-group {
+  margin-bottom: 6px;
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.months {
+  margin-left: 22px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.months label {
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* =====================================================
+   FILTRO DE PERÍODO – UX / DRIP
+   ===================================================== */
+
+.period-selected {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.period-selected:hover {
+  border-color: #068147;
+  box-shadow: 0 0 0 2px rgba(6,129,71,0.15);
+}
+
+.period-dropdown.open .arrow {
+  transform: rotate(180deg);
+}
+
+.arrow {
+  transition: transform 0.2s ease;
+}
+
+/* =====================================================
+   CARDS – MELHORIA VISUAL
+   ===================================================== */
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.card h2 {
+  border-left: 4px solid #068147;
+  padding-left: 8px;
+}
