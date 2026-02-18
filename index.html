@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard RC - Isopack</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- CABEÇALHO -->
+  <header class="app-header">
+    <img src="assets/logo.png" alt="Isopack" />
+    <h1>Dashboard RC - Isopack</h1>
+  </header>
+
+  <!-- FILTROS -->
+  <section class="topbar">
+     <div class="filters">
+       <!-- FILTRO PERÍODO -->
+      <div class="period-filter">
+        <label>Período:</label>
+         <div class="period-dropdown" id="periodDropdown">
+          <div class="period-selected" id="periodSelected">
+            2025 • Ano + Mês Atual
+            <span class="arrow">▾</span>
+          </div>
+           <div class="period-menu">
+            <div class="year-group">
+              <div class="year-header">
+                <input type="checkbox" value="2023">
+                <span>2023</span>
+              </div>
+            </div>
+             <div class="year-group">
+              <div class="year-header">
+                <input type="checkbox" value="2024">
+                <span>2024</span>
+              </div>
+            </div>
+             <div class="year-group expanded">
+              <div class="year-header">
+                <input type="checkbox" value="2025" checked>
+                <span>2025</span>
+              </div>
+               <div class="months">
+                <label><input type="checkbox" value="atual" checked> Mês Atual</label>
+                <label><input type="checkbox" value="1"> Janeiro</label>
+                <label><input type="checkbox" value="2"> Fevereiro</label>
+                <label><input type="checkbox" value="3"> Março</label>
+                <label><input type="checkbox" value="4"> Abril</label>
+                <label><input type="checkbox" value="5"> Maio</label>
+                <label><input type="checkbox" value="6"> Junho</label>
+                <label><input type="checkbox" value="7"> Julho</label>
+                <label><input type="checkbox" value="8"> Agosto</label>
+                <label><input type="checkbox" value="9"> Setembro</label>
+                <label><input type="checkbox" value="10"> Outubro</label>
+                <label><input type="checkbox" value="11"> Novembro</label>
+                <label><input type="checkbox" value="12"> Dezembro</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+       <!-- FILTRO SETOR -->
+      <div class="setor-filter">
+        <label for="filtroSetor">Setor:</label>
+        <select id="filtroSetor">
+          <!-- As opções devem ser criadas via JavaScript -->
+          <option value="">Todos os setores</option>
+        </select>
+      </div>
+
+       <!-- BOTÕES -->
+      <button id="btnReset">Resetar filtros</button>
+      <button id="btnRefresh" class="primary">Atualizar</button>
+     </div>
+     <div class="meta" id="status">Última atualização: --</div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <main class="dashboard">
+
+     <!-- CARD 1 – QUANTIDADE -->
+    <section class="card">
+      <h2>1 • Reclamações por Quantidade</h2>
+       <div class="indicators">
+        <div class="indicator">
+          <div class="value" id="totalQtd">0</div>
+          <div class="label">Total de Reclamações</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="topErroQtd">-</div>
+          <div class="label">Erro mais frequente</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="clientesAtingidos">0</div>
+          <div class="label">Clientes afetados</div>
+        </div>
+      </div>
+       <div class="chart-wrap">
+        <canvas id="chartQtd"></canvas>
+      </div>
+    </section>
+
+     <!-- CARD 2 – TOP CLIENTES -->
+    <section class="card">
+      <h2>2 • Top Clientes por Reclamações</h2>
+       <div class="indicators">
+        <div class="indicator">
+          <div class="value" id="topClienteNome">-</div>
+          <div class="label">Cliente com mais RC</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="topClienteQtd">0</div>
+          <div class="label">Qtd (top)</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="totalClientes">0</div>
+          <div class="label">Clientes únicos</div>
+        </div>
+      </div>
+       <div class="chart-wrap horizontal-chart">
+        <canvas id="chartClientes"></canvas>
+      </div>
+    </section>
+
+     <!-- CARD 3 (ANTIGO 5) – SETORES -->
+     <!-- Mantive a classe 'highlight' aqui para dar destaque, se preferir sem destaque, remova a classe -->
+    <section class="card highlight">
+      <h2>3 • Reclamações por Setor (Ano)</h2>
+       <div class="indicators">
+        <div class="indicator">
+          <div class="value" id="totalSetores">0</div>
+          <div class="label">Setores distintos</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="setorTop">-</div>
+          <div class="label">Setor com mais RC</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="setorParticipacao">0%</div>
+          <div class="label">Participação no total</div>
+        </div>
+      </div>
+       <div class="chart-wrap">
+        <canvas id="chartSetores"></canvas>
+      </div>
+    </section>
+
+     <!-- CARD 4 – VOLUME -->
+    <section class="card">
+      <h2>4 • Volume Acumulado no Ano (m³)</h2>
+       <div class="indicators">
+        <div class="indicator">
+          <div class="value" id="totalM3">0 m³</div>
+          <div class="label">Total acumulado</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="crescimentoM3">+0%</div>
+          <div class="label">Crescimento mensal</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="mediaM3">0 m³</div>
+          <div class="label">Média mensal</div>
+        </div>
+      </div>
+       <div class="chart-wrap">
+        <canvas id="chartVolume"></canvas>
+      </div>
+    </section>
+
+     <!-- CARD 5 (ANTIGO 3) – VALOR -->
+    <section class="card">
+      <h2>5 • Reclamações por Valor (R$)</h2>
+       <div class="indicators">
+        <div class="indicator">
+          <div class="value" id="totalValor">R$ 0</div>
+          <div class="label">Valor total</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="mediaValor">R$ 0</div>
+          <div class="label">Valor médio por RC</div>
+        </div>
+        <div class="indicator">
+          <div class="value" id="topClienteValor">-</div>
+          <div class="label">Cliente maior valor</div>
+        </div>
+      </div>
+       <div class="chart-wrap">
+        <canvas id="chartValor"></canvas>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer>
+    Dashboard preparado para integração com Google Sheets • Isopack
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
