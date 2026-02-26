@@ -37,6 +37,7 @@ window.atualizarDashboard = function () {
   const status = document.getElementById('status');
   if (status)
     status.innerText = `Atualizado às ${new Date().toLocaleTimeString()}`;
+  atualizarTextoPeriodo();
 };
 
 // ===================== GERAR FILTROS =====================
@@ -271,3 +272,31 @@ function atualizarGraficos(dados) {
 document.addEventListener('DOMContentLoaded', () => {
   if (window.DADOS_RC) atualizarDashboard();
 });
+
+function atualizarTextoPeriodo() {
+  const { anos, meses } = lerFiltrosAtivos();
+
+  let textoAno = anos.length ? anos.join(", ") : "Nenhum ano";
+
+  const nomesMeses = [
+    'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+  ];
+
+  let textoMes;
+
+  if (!meses.length) {
+    textoMes = "Nenhum mês";
+  } else if (meses.length === 12) {
+    textoMes = "Todos os meses";
+  } else if (meses.length === 1) {
+    textoMes = nomesMeses[meses[0] - 1];
+  } else if (meses.length <= 3) {
+    textoMes = meses.map(m => nomesMeses[m - 1]).join(", ");
+  } else {
+    textoMes = meses.length + " meses";
+  }
+
+  periodSelected.innerHTML =
+    `${textoAno} • ${textoMes} <span class="arrow">▾</span>`;
+}
