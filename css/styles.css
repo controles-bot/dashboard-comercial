@@ -365,3 +365,78 @@ footer {
   cursor: pointer;
   margin-bottom: 4px;
 }
+
+/* =============================
+   RANKING TOP 5 ERROS
+============================= */
+
+.ranking-container {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ranking-item {
+  display: grid;
+  grid-template-columns: 50px 1fr 80px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f9fbfa;
+  transition: all 0.2s ease;
+}
+
+.ranking-item:hover {
+  background: #eef6f1;
+  transform: translateX(3px);
+}
+
+.ranking-pos {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--iso-green);
+  text-align: center;
+}
+
+.ranking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ranking-nome {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.ranking-bar {
+  width: 100%;
+  height: 6px;
+  background: #e4e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ranking-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--iso-green), var(--iso-dark));
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.ranking-qtd {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+
+.ranking-qtd span {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 400;
+}
