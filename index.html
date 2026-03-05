@@ -95,27 +95,38 @@
   <!-- DASHBOARD -->
   <main class="dashboard">
 
-     <!-- CARD 1 – QUANTIDADE -->
-    <section class="card">
-      <h2>1 • Reclamações por Quantidade</h2>
-       <div class="indicators">
-        <div class="indicator">
-          <div class="value" id="totalQtd">0</div>
-          <div class="label">Total de Reclamações</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="topErroQtd">-</div>
-          <div class="label">Erro mais frequente</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="clientesAtingidos">0</div>
-          <div class="label">Clientes afetados</div>
-        </div>
-      </div>
-       <div class="chart-wrap">
-        <canvas id="chartQtd"></canvas>
-      </div>
-    </section>
+   <!-- CARD 1 – QUANTIDADE -->
+<section class="card">
+  <h2>1 • Reclamações por Quantidade</h2>
+
+  <div class="indicators">
+    <div class="indicator">
+      <div class="value" id="totalQtd">0</div>
+      <div class="label">Total de Reclamações</div>
+    </div>
+    <div class="indicator">
+      <div class="value" id="topErroQtd">-</div>
+      <div class="label">Erro mais frequente</div>
+    </div>
+    <div class="indicator">
+      <div class="value" id="clientesAtingidos">0</div>
+      <div class="label">Clientes afetados</div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="chartQtd"></canvas>
+  </div>
+</section>
+
+<!-- CARD 1.1 – RANKING TOP 5 ERROS -->
+<section class="card ranking-card">
+  <h2>1.1 • Ranking Top 5 Erros</h2>
+
+  <div id="rankingErros" class="ranking-container">
+    <!-- Conteúdo gerado via JS -->
+  </div>
+</section>
 
      <!-- CARD 2 – TOP CLIENTES -->
     <section class="card">
