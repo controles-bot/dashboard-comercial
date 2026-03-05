@@ -300,3 +300,68 @@ footer {
   border-left: 4px solid #068147;
   padding-left: 8px;
 }
+
+/* =====================================================
+   FILTRO SETOR – PADRÃO IGUAL AO PERÍODO
+   ===================================================== */
+
+.setor-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setor-dropdown {
+  position: relative;
+  min-width: 240px;
+  font-size: 14px;
+}
+
+.setor-selected {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.setor-selected:hover {
+  border-color: #068147;
+  box-shadow: 0 0 0 2px rgba(6,129,71,0.15);
+}
+
+.setor-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  padding: 8px;
+  display: none;
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.setor-dropdown.open .setor-menu {
+  display: block;
+}
+
+.setor-dropdown.open .arrow {
+  transform: rotate(180deg);
+}
+
+.setor-menu label {
+  display: flex;
+  gap: 6px;
+  font-weight: 400;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
