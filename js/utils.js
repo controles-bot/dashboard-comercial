@@ -69,23 +69,22 @@ function getTopFrequent(arr, key) {
 /* =====================
    4. LÓGICA DE FILTRO (CORE)
    ===================== */
-function filtrarPorPeriodo(data, anos = [], meses = [], setor = '') {
+function filtrarPorPeriodo(data, anos = [], meses = [], setores = []) {
   if (!data) return [];
 
   return data.filter(item => {
-    // 1. ANO (Converte para string para comparar com o filtro)
-    // Se a lista de anos for vazia ou incluir o ano do item, passa.
+
+    // ANO
     const itemAno = String(item.ano);
     const matchAno = anos.length === 0 || anos.includes(itemAno);
 
-    // 2. MÊS
-    // O CSV traz mesNum (number), o filtro traz string.
+    // MÊS
     const itemMes = String(item.mesNum);
     const matchMes = meses.length === 0 || meses.includes(itemMes);
 
-    // 3. SETOR
-    // Se o filtro for vazio, aceita tudo.
-    const matchSetor = setor === "" || item.setor === setor;
+    // SETOR (agora múltiplo)
+    const matchSetor =
+      setores.length === 0 || setores.includes(item.setor);
 
     return matchAno && matchMes && matchSetor;
   });
@@ -112,3 +111,9 @@ window.gerarSerieMensal = function(data, key) {
                 .reduce((acc, curr) => acc + (Number(curr[key])||0), 0);
    });
 };
+
+function round(value, decimals = 3) {
+  return Number(Number(value).toFixed(decimals));
+}
+
+window.round = round;

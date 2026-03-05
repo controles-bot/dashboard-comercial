@@ -7,7 +7,9 @@ const btnReset = document.getElementById('btnReset');
 const periodDropdown = document.getElementById('periodDropdown');
 const periodSelected = document.getElementById('periodSelected');
 const menuFiltros = document.querySelector('.period-menu');
-const selectSetor = document.getElementById('filtroSetor');
+const setorDropdown = document.getElementById('setorDropdown');
+const setorSelected = document.getElementById('setorSelected');
+const setorMenu = document.getElementById('setorMenu');
 
 let filtrosGerados = false;
 
@@ -28,7 +30,7 @@ window.atualizarDashboard = function () {
     dados,
     filtros.anos,
     filtros.meses,
-    filtros.setor
+    filtros.setores
   );
 
   atualizarKPIs(dadosFiltrados);
@@ -38,23 +40,28 @@ window.atualizarDashboard = function () {
   if (status)
     status.innerText = `Atualizado às ${new Date().toLocaleTimeString()}`;
   atualizarTextoPeriodo();
+atualizarTextoSetor();
 };
 
 // ===================== GERAR FILTROS =====================
 function gerarFiltrosDinamicos(dados) {
 
   // ================= SETOR =================
-  const setores = [...new Set(dados.map(d => d.setor))].sort();
-  selectSetor.innerHTML = '<option value="">Todos os setores</option>';
+// ================= SETOR =================
+const setores = [...new Set(dados.map(d => d.setor))].sort();
 
-  setores.forEach(setor => {
-    if (!setor) return;
-    const opt = document.createElement('option');
-    opt.value = setor;
-    opt.innerText = setor;
-    selectSetor.appendChild(opt);
-  });
+setorMenu.innerHTML = "";
 
+setores.forEach(setor => {
+  if (!setor) return;
+
+  setorMenu.innerHTML += `
+    <label>
+      <input type="checkbox" class="filtro-setor-auto" value="${setor}" checked>
+      ${setor}
+    </label>
+  `;
+});
   // ================= ANOS =================
   const anosUnicos = [...new Set(dados.map(d => d.ano))].sort((a, b) => b - a);
 
@@ -107,8 +114,6 @@ function gerarFiltrosDinamicos(dados) {
 // ===================== EVENTOS =====================
 function adicionarEventos() {
 
-  selectSetor.addEventListener('change', atualizarDashboard);
-
   // Evento geral
   document.querySelectorAll('.period-menu input')
     .forEach(input => {
@@ -145,10 +150,35 @@ function adicionarEventos() {
   });
 
   btnReset.addEventListener('click', () => {
-    document.querySelectorAll('input[type="checkbox"]')
-      .forEach(cb => cb.checked = true);
-    selectSetor.value = "";
-    atualizarDashboard();
+
+  // Marca todos os checkboxes
+  document.querySelectorAll('input[type="checkbox"]')
+    .forEach(cb => cb.checked = true);
+
+  atualizarTextoSetor();
+  atualizarDashboard();
+});
+  
+
+  // Abrir / fechar dropdown setor
+setorSelected.addEventListener('click', (e) => {
+  e.stopPropagation();
+  setorDropdown.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!setorDropdown.contains(e.target)) {
+    setorDropdown.classList.remove('open');
+  }
+});
+
+// Atualizar ao mudar setor
+document.querySelectorAll('.filtro-setor-auto')
+  .forEach(cb => {
+    cb.addEventListener('change', () => {
+      atualizarTextoSetor();
+      atualizarDashboard();
+    });
   });
 }
 
@@ -163,9 +193,11 @@ function lerFiltrosAtivos() {
     document.querySelectorAll('.filtro-mes-auto:checked')
   ).map(cb => cb.value);
 
-  const setor = selectSetor.value;
+const setores = Array.from(
+  document.querySelectorAll('.filtro-setor-auto:checked')
+).map(cb => cb.value);
 
-  return { anos, meses, setor };
+return { anos, meses, setores };
 }
 
 // ===================== KPIs =====================
@@ -204,6 +236,9 @@ function atualizarGraficos(dados) {
 
   const mesesSelecionados = lerFiltrosAtivos().meses.map(m => Number(m));
 
+  console.log("Meses selecionados:", mesesSelecionados);
+  console.log("Total dados recebidos:", dados.length);
+
   // 🔥 Se nenhum mês estiver marcado → limpa gráficos
   if (!mesesSelecionados.length) {
     renderBarChart('chartQtd', [], []);
@@ -214,60 +249,92 @@ function atualizarGraficos(dados) {
     return;
   }
 
-  // QTD
+  const labelsMes = mesesSelecionados.map(m => meses[m - 1]);
+
+  // ===================== QTD =====================
   const qtdMes = mesesSelecionados.map(m =>
     dados.filter(d => d.mesNum == m).length
   );
-  renderBarChart('chartQtd',
-    mesesSelecionados.map(m => meses[m-1]),
-    qtdMes,
-    'Reclamações'
-  );
 
-  // VOLUME
-  const volMes = mesesSelecionados.map(m =>
-    dados.filter(d => d.mesNum == m)
-         .reduce((a,b)=>a+(Number(b.volume)||0),0)
-  );
-  renderLineChart('chartVolume',
-    mesesSelecionados.map(m => meses[m-1]),
+  renderBarChart('chartQtd', labelsMes, qtdMes, 'Reclamações');
+
+
+  // ===================== VOLUME =====================
+  const volMes = mesesSelecionados.map(m => {
+
+    const soma = dados
+      .filter(d => d.mesNum == m)
+      .reduce((a, b) => a + (Number(b.volume) || 0), 0);
+
+    return Number(soma.toFixed(3));
+
+  });
+
+  renderLineChart(
+    'chartVolume',
+    labelsMes,
     volMes,
     'Volume m³'
   );
 
-  // VALOR
-  const valMes = mesesSelecionados.map(m =>
-    dados.filter(d => d.mesNum == m)
-         .reduce((a,b)=>a+(Number(b.valor)||0),0)
-  );
-  renderBarChart('chartValor',
-    mesesSelecionados.map(m => meses[m-1]),
+
+  // ===================== VALOR =====================
+  const valMes = mesesSelecionados.map(m => {
+
+    const soma = dados
+      .filter(d => d.mesNum == m)
+      .reduce((a, b) => a + (Number(b.valor) || 0), 0);
+
+    return Number(soma.toFixed(2));
+
+  });
+
+  console.log("Valores por mês:", valMes);
+
+  renderBarChart(
+    'chartValor',
+    labelsMes,
     valMes,
     'Valor R$'
   );
 
-  // CLIENTES
+
+  // ===================== CLIENTES =====================
   const cli = {};
-  dados.forEach(d => cli[d.cliente] = (cli[d.cliente]||0)+1);
-  const top = Object.entries(cli).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  dados.forEach(d => {
+    if (!d.cliente) return;
+    cli[d.cliente] = (cli[d.cliente] || 0) + 1;
+  });
+
+  const top = Object.entries(cli)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
   renderHorizontalBarChart(
     'chartClientes',
-    top.map(t=>t[0]),
-    top.map(t=>t[1]),
+    top.map(t => t[0]),
+    top.map(t => t[1]),
     'Top Clientes'
   );
 
-  // SETORES
-  const setAgr = {};
-  dados.forEach(d => setAgr[d.setor]=(setAgr[d.setor]||0)+1);
-  renderBarChart(
-    'chartSetores',
-    Object.keys(setAgr),
-    Object.values(setAgr),
-    'Setores'
-  );
-}
 
+  // ===================== SETORES =====================
+  const setAgr = {};
+  dados.forEach(d => {
+    if (!d.setor) return;
+    setAgr[d.setor] = (setAgr[d.setor] || 0) + 1;
+  });
+
+  const setoresLabels = Object.keys(setAgr);
+  const setoresValores = Object.values(setAgr);
+
+  if (!setoresLabels.length) {
+    renderBarChart('chartSetores', ['Sem dados'], [0], 'Setores');
+  } else {
+    renderBarChart('chartSetores', setoresLabels, setoresValores, 'Setores');
+  }
+
+}
 // ===================== INÍCIO =====================
 document.addEventListener('DOMContentLoaded', () => {
   if (window.DADOS_RC) atualizarDashboard();
@@ -299,4 +366,26 @@ function atualizarTextoPeriodo() {
 
   periodSelected.innerHTML =
     `${textoAno} • ${textoMes} <span class="arrow">▾</span>`;
+}
+
+function atualizarTextoSetor() {
+
+  const setores = Array.from(
+    document.querySelectorAll('.filtro-setor-auto:checked')
+  ).map(cb => cb.value);
+
+  let texto;
+
+  if (!setores.length) {
+    texto = "Nenhum setor";
+  } else if (setores.length === document.querySelectorAll('.filtro-setor-auto').length) {
+    texto = "Todos os setores";
+  } else if (setores.length <= 2) {
+    texto = setores.join(", ");
+  } else {
+    texto = setores.length + " setores";
+  }
+
+  setorSelected.innerHTML =
+    `${texto} <span class="arrow">▾</span>`;
 }

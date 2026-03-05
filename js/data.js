@@ -60,18 +60,26 @@ function csvToJson(csv) {
 
 /* ===================== NUMERO BR ===================== */
 function parseSafeNumber(valor) {
+
   if (!valor) return 0;
 
-  const texto = String(valor)
-    .replace(/"/g, '')
-    .trim()
-    .replace(/\./g, '')      // remove milhar
-    .replace(',', '.');      // vírgula decimal
+  let texto = String(valor)
+    .replace(/R\$/gi, '')   // remove símbolo moeda
+    .replace(/\s/g, '')     // remove espaços
+    .replace(/"/g, '')      
+    .trim();
+
+  // formato brasileiro
+  if (texto.includes(',') && texto.includes('.')) {
+    texto = texto.replace(/\./g, '').replace(',', '.');
+  } 
+  else if (texto.includes(',')) {
+    texto = texto.replace(',', '.');
+  }
 
   const numero = Number(texto);
   return isNaN(numero) ? 0 : numero;
 }
-
 /* ===================== DATA FLEXÍVEL ===================== */
 function extrairDataInfo(valor) {
   if (!valor) return { mesNum: null, ano: null };
@@ -101,7 +109,7 @@ function extrairDataInfo(valor) {
 
 /* ===================== NORMALIZA ===================== */
 function normalizarDados(raw) {
-
+console.log('Headers detectados:', Object.keys(raw[0]));
   const normalizados = raw
     .map(r => {
 
@@ -128,17 +136,21 @@ function normalizarDados(raw) {
 
   console.log('📊 Linhas CSV:', raw.length);
   console.log('📊 Linhas válidas:', normalizados.length);
-  console.log('📦 Volume total:',
-    normalizados.reduce((acc, d) => acc + d.volume, 0)
-  );
 
   return normalizados;
 }
 
-/* ===================== LOAD ===================== */
+/* ===================== LOAD PRINCIPAL ===================== */
 async function carregarDados() {
   try {
-    const res = await fetch(CSV_URL);
+
+    const btn = document.getElementById('btnRefresh');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Atualizando...';
+    }
+
+    const res = await fetch(CSV_URL + '&t=' + new Date().getTime());
     const csv = await res.text();
 
     const bruto = csvToJson(csv);
@@ -153,10 +165,34 @@ async function carregarDados() {
       atualizarDashboard();
     }
 
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Atualizar';
+    }
+
   } catch (e) {
     console.error('❌ Erro ao carregar CSV:', e);
     window.DADOS_RC = [];
+
+    const btn = document.getElementById('btnRefresh');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Atualizar';
+    }
   }
 }
 
-carregarDados();
+/* ===================== BOTÃO REFRESH ===================== */
+document.addEventListener('DOMContentLoaded', () => {
+
+  carregarDados();
+
+  const btnRefresh = document.getElementById('btnRefresh');
+
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', () => {
+      carregarDados();
+    });
+  }
+
+});
