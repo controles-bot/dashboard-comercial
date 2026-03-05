@@ -35,6 +35,7 @@ window.atualizarDashboard = function () {
 
   atualizarKPIs(dadosFiltrados);
   atualizarGraficos(dadosFiltrados);
+  atualizarRankingErros(dadosFiltrados);
 
   const status = document.getElementById('status');
   if (status)
@@ -388,4 +389,59 @@ function atualizarTextoSetor() {
 
   setorSelected.innerHTML =
     `${texto} <span class="arrow">▾</span>`;
+}
+
+// ===================== RANKING TOP 5 ERROS =====================
+function atualizarRankingErros(dados) {
+
+  const container = document.getElementById("rankingErros");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!dados.length) {
+    container.innerHTML = "<p>Sem dados para o período selecionado.</p>";
+    return;
+  }
+
+  // Agrupar por erro
+  const errosAgrupados = {};
+
+  dados.forEach(d => {
+    if (!d.erro) return;
+    errosAgrupados[d.erro] = (errosAgrupados[d.erro] || 0) + 1;
+  });
+
+  // Transformar em array e ordenar
+  const ranking = Object.entries(errosAgrupados)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const total = dados.length;
+
+  ranking.forEach((item, index) => {
+
+    const nomeErro = item[0];
+    const quantidade = item[1];
+    const percentual = ((quantidade / total) * 100).toFixed(1);
+
+    const div = document.createElement("div");
+    div.classList.add("ranking-item");
+
+    div.innerHTML = `
+      <div class="ranking-pos">${index + 1}º</div>
+      <div class="ranking-info">
+        <div class="ranking-nome">${nomeErro}</div>
+        <div class="ranking-bar">
+          <div class="ranking-fill" style="width:${percentual}%"></div>
+        </div>
+      </div>
+      <div class="ranking-qtd">
+        ${quantidade} <span>${percentual}%</span>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
 }

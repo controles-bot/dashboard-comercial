@@ -1,6 +1,6 @@
 /* =====================================================
    GRÁFICOS – CHART.JS
-   FINAL – Suporte a comparação por ano + labels externos
+   FINAL – FORMATADO + VISUAL CORPORATIVO
    ===================================================== */
 
 const FONT_FAMILY = 'Inter, system-ui, -apple-system, Arial, sans-serif';
@@ -8,7 +8,6 @@ const TEXT_COLOR = '#374151';
 const TITLE_COLOR = '#111827';
 const GRID_COLOR = '#e5e7eb';
 
-// Paleta automática para múltiplos anos
 const COLOR_PALETTE = [
   '#068147',
   '#1d4ed8',
@@ -20,16 +19,14 @@ const COLOR_PALETTE = [
 
 const charts = {};
 
-// Registrar plugin DataLabels
 if (window.ChartDataLabels) {
   Chart.register(ChartDataLabels);
 }
 
-// Configuração global
 Chart.defaults.font.family = FONT_FAMILY;
 Chart.defaults.color = TEXT_COLOR;
 
-// ===================== OPÇÕES PADRÃO =====================
+/* ===================== OPÇÕES PADRÃO ===================== */
 function getDefaultOptions(extra = {}) {
   return {
     responsive: true,
@@ -38,7 +35,10 @@ function getDefaultOptions(extra = {}) {
     plugins: {
       legend: {
         display: true,
-        position: 'top'
+        position: 'top',
+        labels: {
+          font: { size: 11 }
+        }
       },
 
       tooltip: {
@@ -46,27 +46,92 @@ function getDefaultOptions(extra = {}) {
         borderColor: '#d1d5db',
         borderWidth: 1,
         titleColor: TITLE_COLOR,
-        bodyColor: TEXT_COLOR
+        bodyColor: TEXT_COLOR,
+        callbacks: {
+          label: function(context) {
+
+            const value = context.raw;
+            const label = (context.dataset.label || '').toLowerCase();
+
+            if (label.includes('valor')) {
+              return 'R$' + Number(value).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              });
+            }
+
+            if (label.includes('volume')) {
+              return Number(value).toLocaleString('pt-BR', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+              }) + ' m³';
+            }
+
+            return value;
+          }
+        }
       },
 
-      // 🔥 VALORES FORA DAS BARRAS
       datalabels: {
         anchor: 'end',
         align: 'end',
-        offset: 6,
+        offset: 4,
         color: '#111',
-        font: { weight: 'bold', size: 11 },
-        formatter: value => value ?? 0
+        font: { weight: '600', size: 9 },
+        formatter: (value, context) => {
+
+          const label = (context.dataset.label || '').toLowerCase();
+
+          if (label.includes('valor')) {
+            return 'R$' + Number(value).toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          }
+
+          if (label.includes('volume')) {
+            return Number(value).toLocaleString('pt-BR', {
+              minimumFractionDigits: 3,
+              maximumFractionDigits: 3
+            });
+          }
+
+          return value ?? 0;
+        }
       }
     },
 
     scales: {
       x: {
-        grid: { color: GRID_COLOR }
+        grid: { color: GRID_COLOR },
+        ticks: {
+          font: { size: 10 }
+        }
       },
       y: {
         beginAtZero: true,
-        grid: { color: GRID_COLOR }
+        grid: { color: GRID_COLOR },
+        ticks: {
+          font: { size: 10 },
+          callback: function(value) {
+
+            const datasetLabel =
+              this.chart.data.datasets[0]?.label?.toLowerCase() || '';
+
+            if (datasetLabel.includes('valor')) {
+              return 'R$' + Number(value).toLocaleString('pt-BR');
+            }
+
+            if (datasetLabel.includes('volume')) {
+              return Number(value).toLocaleString('pt-BR', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+              });
+            }
+
+            return value;
+          }
+        }
       }
     },
 
@@ -74,7 +139,7 @@ function getDefaultOptions(extra = {}) {
   };
 }
 
-// ===================== BASE =====================
+/* ===================== BASE ===================== */
 function createOrUpdateChart(id, config) {
 
   const canvas = document.getElementById(id);
@@ -91,12 +156,11 @@ function createOrUpdateChart(id, config) {
   charts[id] = new Chart(canvas, config);
 }
 
-// ===================== BARRA (SUPORTA 1 OU VÁRIOS DATASETS) =====================
+/* ===================== BARRA ===================== */
 function renderBarChart(id, labels, data, label = '') {
 
   let datasets = [];
 
-  // 🔥 Se data já vier como array de datasets (comparação por ano)
   if (Array.isArray(data) && data.length && typeof data[0] === 'object' && data[0].data) {
     datasets = data.map((ds, index) => ({
       label: ds.label,
@@ -105,7 +169,6 @@ function renderBarChart(id, labels, data, label = '') {
       borderRadius: 6
     }));
   } else {
-    // Caso normal (apenas um dataset)
     datasets = [{
       label,
       data: data || [],
@@ -116,15 +179,12 @@ function renderBarChart(id, labels, data, label = '') {
 
   createOrUpdateChart(id, {
     type: 'bar',
-    data: {
-      labels: labels || [],
-      datasets: datasets
-    },
+    data: { labels: labels || [], datasets },
     options: getDefaultOptions()
   });
 }
 
-// ===================== BARRA HORIZONTAL =====================
+/* ===================== BARRA HORIZONTAL ===================== */
 function renderHorizontalBarChart(id, labels, data, label = '') {
 
   createOrUpdateChart(id, {
@@ -138,13 +198,11 @@ function renderHorizontalBarChart(id, labels, data, label = '') {
         borderRadius: 6
       }]
     },
-    options: getDefaultOptions({
-      indexAxis: 'y'
-    })
+    options: getDefaultOptions({ indexAxis: 'y' })
   });
 }
 
-// ===================== LINHA (SUPORTA MÚLTIPLOS ANOS) =====================
+/* ===================== LINHA ===================== */
 function renderLineChart(id, labels, data, label = '') {
 
   let datasets = [];
@@ -173,15 +231,12 @@ function renderLineChart(id, labels, data, label = '') {
 
   createOrUpdateChart(id, {
     type: 'line',
-    data: {
-      labels: labels || [],
-      datasets: datasets
-    },
+    data: { labels: labels || [], datasets },
     options: getDefaultOptions()
   });
 }
 
-// ===================== EXPORTAÇÃO GLOBAL =====================
+/* ===================== EXPORTAÇÃO ===================== */
 window.renderBarChart = renderBarChart;
 window.renderHorizontalBarChart = renderHorizontalBarChart;
 window.renderLineChart = renderLineChart;
