@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard RC - Isopack</title>
 
+  
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -71,13 +72,18 @@
       </div>
 
        <!-- FILTRO SETOR -->
-      <div class="setor-filter">
-        <label for="filtroSetor">Setor:</label>
-        <select id="filtroSetor">
-          <!-- As opções devem ser criadas via JavaScript -->
-          <option value="">Todos os setores</option>
-        </select>
-      </div>
+   <div class="setor-filter">
+  <label>Setor:</label>
+  <div class="setor-dropdown" id="setorDropdown">
+    <div class="setor-selected" id="setorSelected">
+      Todos os setores
+      <span class="arrow">▾</span>
+    </div>
+    <div class="setor-menu" id="setorMenu">
+      <!-- Gerado via JS -->
+    </div>
+  </div>
+</div>
 
        <!-- BOTÕES -->
       <button id="btnReset">Resetar filtros</button>
