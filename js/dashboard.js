@@ -47,21 +47,50 @@ atualizarTextoSetor();
 // ===================== GERAR FILTROS =====================
 function gerarFiltrosDinamicos(dados) {
 
-  // ================= SETOR =================
-// ================= SETOR =================
-const setores = [...new Set(dados.map(d => d.setor))].sort();
+ // ================= SETOR =================
+const setores =
+  [...new Set(dados.map(d => d.setor))]
+    .filter(Boolean)
+    .sort();
 
 setorMenu.innerHTML = "";
 
+// ================= TODOS OS SETORES =================
+setorMenu.innerHTML += `
+  <label style="
+    display:block;
+    font-weight:bold;
+    margin-bottom:8px;
+    border-bottom:1px solid #e5e7eb;
+    padding-bottom:8px;
+  ">
+    <input
+      type="checkbox"
+      id="todosSetores"
+      checked
+    >
+    Todos os setores
+  </label>
+`;
+
+// ================= LISTA SETORES =================
 setores.forEach(setor => {
-  if (!setor) return;
 
   setorMenu.innerHTML += `
-    <label>
-      <input type="checkbox" class="filtro-setor-auto" value="${setor}" checked>
+    <label style="
+      display:block;
+      margin-bottom:6px;
+    ">
+      <input
+        type="checkbox"
+        class="filtro-setor-auto"
+        value="${setor}"
+        checked
+      >
       ${setor}
     </label>
   `;
+
 });
   // ================= ANOS =================
   const anosUnicos = [...new Set(dados.map(d => d.ano))].sort((a, b) => b - a);
@@ -173,14 +202,55 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Atualizar ao mudar setor
-document.querySelectorAll('.filtro-setor-auto')
-  .forEach(cb => {
-    cb.addEventListener('change', () => {
-      atualizarTextoSetor();
-      atualizarDashboard();
+// ================= TODOS OS SETORES =================
+const todosSetores =
+  document.getElementById('todosSetores');
+
+const setoresCheckbox =
+  document.querySelectorAll('.filtro-setor-auto');
+
+// ================= MARCAR TODOS =================
+if (todosSetores) {
+
+  todosSetores.addEventListener('change', () => {
+
+    setoresCheckbox.forEach(cb => {
+
+      cb.checked =
+        todosSetores.checked;
+
     });
+
+    atualizarTextoSetor();
+    atualizarDashboard();
+
   });
+
+}
+
+// ================= ALTERAÇÃO INDIVIDUAL =================
+setoresCheckbox.forEach(cb => {
+
+  cb.addEventListener('change', () => {
+
+    const marcados =
+      Array.from(setoresCheckbox)
+        .filter(s => s.checked);
+
+    if (todosSetores) {
+
+      todosSetores.checked =
+        marcados.length ===
+        setoresCheckbox.length;
+
+    }
+
+    atualizarTextoSetor();
+    atualizarDashboard();
+
+  });
+
+});
 }
 
 // ===================== LER FILTROS =====================

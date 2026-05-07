@@ -8,13 +8,18 @@ const MESES_ORDEM = [
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
 ];
 
-/* ===================== CSV ROBUSTO ===================== */
+/* =====================================================
+   CSV ROBUSTO
+   ===================================================== */
 function parseCSVLine(line, sep) {
+
   const result = [];
+
   let current = '';
   let insideQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
+
     const char = line[i];
 
     if (char === '"') {
@@ -23,176 +28,329 @@ function parseCSVLine(line, sep) {
     }
 
     if (char === sep && !insideQuotes) {
+
       result.push(current);
       current = '';
+
     } else {
+
       current += char;
+
     }
   }
 
   result.push(current);
+
   return result;
 }
 
 function csvToJson(csv) {
-  const linhas = csv.split('\n').filter(l => l.trim() !== '');
-  const sep = linhas[0].includes(';') ? ';' : ',';
+
+  const linhas = csv
+    .split('\n')
+    .filter(l => l.trim() !== '');
+
+  const sep =
+    linhas[0].includes(';') ? ';' : ',';
 
   const headers = parseCSVLine(linhas[0], sep)
     .map(h =>
       h.toLowerCase()
-       .normalize('NFD')
-       .replace(/[\u0300-\u036f]/g, '')
-       .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
     );
 
   return linhas.slice(1).map(l => {
+
     const cols = parseCSVLine(l, sep);
+
     const obj = {};
 
     headers.forEach((h, i) => {
-      obj[h] = cols[i] ? cols[i].trim() : '';
+
+      obj[h] =
+        cols[i]
+          ? cols[i].trim()
+          : '';
+
     });
 
     return obj;
   });
 }
 
-/* ===================== NUMERO BR ===================== */
+/* =====================================================
+   NUMERO BR ROBUSTO
+   ===================================================== */
 function parseSafeNumber(valor) {
 
-  if (!valor) return 0;
-
-  let texto = String(valor)
-    .replace(/R\$/gi, '')   // remove símbolo moeda
-    .replace(/\s/g, '')     // remove espaços
-    .replace(/"/g, '')      
-    .trim();
-
-  // formato brasileiro
-  if (texto.includes(',') && texto.includes('.')) {
-    texto = texto.replace(/\./g, '').replace(',', '.');
-  } 
-  else if (texto.includes(',')) {
-    texto = texto.replace(',', '.');
+  if (valor === null || valor === undefined) {
+    return 0;
   }
 
-  const numero = Number(texto);
-  return isNaN(numero) ? 0 : numero;
-}
-/* ===================== DATA FLEXÍVEL ===================== */
-function extrairDataInfo(valor) {
-  if (!valor) return { mesNum: null, ano: null };
+  let texto = String(valor)
+    .replace(/\s/g, '')
+    .replace(/[R$\u00A0]/g, '')
+    .replace(/"/g, '')
+    .trim();
 
+  texto = texto
+    .replace(/\./g, '')
+    .replace(',', '.');
+
+  const numero = parseFloat(texto);
+
+  return isNaN(numero)
+    ? 0
+    : numero;
+}
+
+/* =====================================================
+   DATA FLEXÍVEL
+   ===================================================== */
+function extrairDataInfo(valor) {
+
+  if (!valor) {
+    return {
+      mesNum: null,
+      ano: null
+    };
+  }
+
+  valor = String(valor).trim();
+
+  // ================= DD/MM/YYYY =================
   if (valor.includes('/')) {
+
     const partes = valor.split('/');
+
     if (partes.length === 3) {
+
       return {
         mesNum: Number(partes[1]),
         ano: Number(partes[2])
       };
+
     }
   }
 
+  // ================= YYYY-MM-DD =================
   if (valor.includes('-')) {
+
     const partes = valor.split('-');
-    if (partes.length === 3) {
+
+    if (partes.length >= 3) {
+
       return {
         mesNum: Number(partes[1]),
         ano: Number(partes[0])
       };
+
     }
   }
 
-  return { mesNum: null, ano: null };
-}
+  // ================= SERIAL GOOGLE SHEETS =================
+  const serial = Number(valor);
 
-/* ===================== NORMALIZA ===================== */
-function normalizarDados(raw) {
-console.log('Headers detectados:', Object.keys(raw[0]));
-  const normalizados = raw
-    .map(r => {
+  if (!isNaN(serial) && serial > 40000) {
 
-      const dataInfo = extrairDataInfo(r['data da ocorrencia']);
-
-      return {
-        mes: dataInfo.mesNum ? MESES_ORDEM[dataInfo.mesNum - 1] : null,
-        cliente: (r['nome do cliente'] || '').trim(),
-        erro: (r['qual o erro ocorreu?'] || '').trim(),
-        setor: (r['setor da ocorrencia'] || '').trim(),
-        qtd: 1,
-        volume: parseSafeNumber(r['m3 calculado']),
-        valor: parseSafeNumber(r['r$']),
-        ano: dataInfo.ano,
-        mesNum: dataInfo.mesNum
-      };
-
-    })
-    .filter(d =>
-      d.cliente !== '' &&
-      d.ano !== null &&
-      d.mesNum !== null
+    const data = new Date(
+      (serial - 25569) * 86400 * 1000
     );
 
+    return {
+      mesNum: data.getMonth() + 1,
+      ano: data.getFullYear()
+    };
+  }
+
+  return {
+    mesNum: null,
+    ano: null
+  };
+}
+
+/* =====================================================
+   NORMALIZA
+   ===================================================== */
+function normalizarDados(raw) {
+
+  console.log(
+    'Headers detectados:',
+    Object.keys(raw[0])
+  );
+
+  const normalizados = raw.map(r => {
+
+    const dataInfo =
+      extrairDataInfo(r['data da ocorrencia']);
+
+    return {
+
+      mes:
+        dataInfo.mesNum
+          ? MESES_ORDEM[dataInfo.mesNum - 1]
+          : null,
+
+      cliente:
+        (r['nome do cliente'] || '').trim(),
+
+      erro:
+        (r['qual o erro ocorreu?'] || '').trim(),
+
+      setor:
+        (r['setor da ocorrencia'] || '').trim(),
+
+      qtd: 1,
+
+volume: parseSafeNumber(
+  r['m3 calculado'] ||
+  r['qtd x medidas = m³']
+),
+
+      valor:
+        parseSafeNumber(r['r$']),
+
+      ano:
+        dataInfo.ano,
+
+      mesNum:
+        dataInfo.mesNum
+
+    };
+
+  })
+
+  // ================= FILTRO MAIS FLEXÍVEL =================
+  .filter(d => d.cliente !== '');
+
   console.log('📊 Linhas CSV:', raw.length);
-  console.log('📊 Linhas válidas:', normalizados.length);
+
+  console.log(
+    '📊 Linhas válidas:',
+    normalizados.length
+  );
+
+  // ================= DEBUG DATAS =================
+  console.log(
+    'Linhas com data inválida:',
+    normalizados.filter(d =>
+      d.ano === null ||
+      d.mesNum === null
+    )
+  );
+
+  // ================= DEBUG VALOR =================
+  const totalValor = normalizados.reduce(
+    (acc, item) => acc + (item.valor || 0),
+    0
+  );
+
+  console.log(
+    '💰 Valor total encontrado:',
+    totalValor.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  );
 
   return normalizados;
 }
 
-/* ===================== LOAD PRINCIPAL ===================== */
+/* =====================================================
+   LOAD PRINCIPAL
+   ===================================================== */
 async function carregarDados() {
+
   try {
 
-    const btn = document.getElementById('btnRefresh');
+    const btn =
+      document.getElementById('btnRefresh');
+
     if (btn) {
+
       btn.disabled = true;
       btn.innerText = 'Atualizando...';
+
     }
 
-    const res = await fetch(CSV_URL + '&t=' + new Date().getTime());
+    const res = await fetch(
+      CSV_URL + '&t=' + new Date().getTime()
+    );
+
     const csv = await res.text();
 
+    console.log('CSV bruto:', csv);
+
     const bruto = csvToJson(csv);
+
     const dados = normalizarDados(bruto);
 
     window.DADOS_RC = dados;
+
     window.MESES_ORDEM = MESES_ORDEM;
 
-    console.log('✅ Dados carregados corretamente');
+    console.log(
+      '✅ Dados carregados corretamente'
+    );
 
     if (typeof atualizarDashboard === 'function') {
+
       atualizarDashboard();
+
     }
 
     if (btn) {
+
       btn.disabled = false;
       btn.innerText = 'Atualizar';
+
     }
 
   } catch (e) {
-    console.error('❌ Erro ao carregar CSV:', e);
+
+    console.error(
+      '❌ Erro ao carregar CSV:',
+      e
+    );
+
     window.DADOS_RC = [];
 
-    const btn = document.getElementById('btnRefresh');
+    const btn =
+      document.getElementById('btnRefresh');
+
     if (btn) {
+
       btn.disabled = false;
       btn.innerText = 'Atualizar';
+
     }
   }
 }
 
-/* ===================== BOTÃO REFRESH ===================== */
-document.addEventListener('DOMContentLoaded', () => {
+/* =====================================================
+   BOTÃO REFRESH
+   ===================================================== */
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
-  carregarDados();
+    carregarDados();
 
-  const btnRefresh = document.getElementById('btnRefresh');
+    const btnRefresh =
+      document.getElementById('btnRefresh');
 
-  if (btnRefresh) {
-    btnRefresh.addEventListener('click', () => {
-      carregarDados();
-    });
+    if (btnRefresh) {
+
+      btnRefresh.addEventListener(
+        'click',
+        () => {
+          carregarDados();
+        }
+      );
+
+    }
+
   }
-
-});
+);
