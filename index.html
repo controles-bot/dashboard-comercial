@@ -3,231 +3,384 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard RC - Isopack</title>
+  <title>Dashboard RRC - Isopack</title>
 
-  
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
-  <!-- Estilos -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
 <body>
 
-  <!-- CABEÇALHO -->
   <header class="app-header">
-    <img src="assets/logo.png" alt="Isopack" />
-    <h1>Dashboard RC - Isopack</h1>
+    <div class="app-header-left">
+      <img src="assets/logo.png" alt="Isopack" class="app-logo" />
+
+      <div class="app-title-group">
+        <h1>Dashboard RRC - Isopack</h1>
+        <p>Acompanhamento das Reclamações de Clientes</p>
+      </div>
+    </div>
   </header>
 
-  <!-- FILTROS -->
+
   <section class="topbar">
-     <div class="filters">
-       <!-- FILTRO PERÍODO -->
-      <div class="period-filter">
-        <label>Período:</label>
-         <div class="period-dropdown" id="periodDropdown">
-          <div class="period-selected" id="periodSelected">
-            2025 • Ano + Mês Atual
+
+    <div class="filters">
+
+      <div class="filter-group period-filter">
+        <label for="periodSelected">Período:</label>
+
+        <div class="custom-dropdown period-dropdown" id="periodDropdown">
+
+          <button
+            type="button"
+            class="dropdown-selected period-selected"
+            id="periodSelected"
+            aria-expanded="false"
+          >
+            <span id="periodSelectedText">Todos os períodos</span>
             <span class="arrow">▾</span>
+          </button>
+
+          <div class="dropdown-menu period-menu" id="periodMenu">
+            <!-- Gerado via JavaScript -->
           </div>
-           <div class="period-menu">
-            <div class="year-group">
-              <div class="year-header">
-                <input type="checkbox" value="2023">
-                <span>2023</span>
-              </div>
-            </div>
-             <div class="year-group">
-              <div class="year-header">
-                <input type="checkbox" value="2024">
-                <span>2024</span>
-              </div>
-            </div>
-             <div class="year-group expanded">
-              <div class="year-header">
-                <input type="checkbox" value="2025" checked>
-                <span>2025</span>
-              </div>
-               <div class="months">
-                <label><input type="checkbox" value="atual" checked> Mês Atual</label>
-                <label><input type="checkbox" value="1"> Janeiro</label>
-                <label><input type="checkbox" value="2"> Fevereiro</label>
-                <label><input type="checkbox" value="3"> Março</label>
-                <label><input type="checkbox" value="4"> Abril</label>
-                <label><input type="checkbox" value="5"> Maio</label>
-                <label><input type="checkbox" value="6"> Junho</label>
-                <label><input type="checkbox" value="7"> Julho</label>
-                <label><input type="checkbox" value="8"> Agosto</label>
-                <label><input type="checkbox" value="9"> Setembro</label>
-                <label><input type="checkbox" value="10"> Outubro</label>
-                <label><input type="checkbox" value="11"> Novembro</label>
-                <label><input type="checkbox" value="12"> Dezembro</label>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
 
-       <!-- FILTRO SETOR -->
-   <div class="setor-filter">
-  <label>Setor:</label>
-  <div class="setor-dropdown" id="setorDropdown">
-    <div class="setor-selected" id="setorSelected">
-      Todos os setores
-      <span class="arrow">▾</span>
-    </div>
-    <div class="setor-menu" id="setorMenu">
-      <!-- Gerado via JS -->
-    </div>
-  </div>
-</div>
 
-       <!-- BOTÕES -->
-      <button id="btnReset">Resetar filtros</button>
-      <button id="btnRefresh" class="primary">Atualizar</button>
-     </div>
-     <div class="meta" id="status">Última atualização: --</div>
+      <div class="filter-group setor-filter">
+        <label for="setorSelected">Setor:</label>
+
+        <div class="custom-dropdown setor-dropdown" id="setorDropdown">
+
+          <button
+            type="button"
+            class="dropdown-selected setor-selected"
+            id="setorSelected"
+            aria-expanded="false"
+          >
+            <span id="setorSelectedText">Todos os setores</span>
+            <span class="arrow">▾</span>
+          </button>
+
+          <div class="dropdown-menu setor-menu" id="setorMenu">
+            <!-- Gerado via JavaScript -->
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="filter-group">
+        <label for="filtroVendedor">Vendedor:</label>
+
+        <select id="filtroVendedor">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+
+      <div class="filter-group">
+        <label for="filtroRepresentante">Representante:</label>
+
+        <select id="filtroRepresentante">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+
+      <div class="filter-group cliente-filter">
+        <label for="filtroCliente">Cliente:</label>
+
+        <input
+          type="search"
+          id="filtroCliente"
+          placeholder="Buscar cliente"
+          autocomplete="off"
+        />
+      </div>
+
+
+      <div class="filter-actions">
+
+        <button
+          type="button"
+          id="btnReset"
+          class="btn secondary"
+        >
+          Resetar filtros
+        </button>
+
+        <button
+          type="button"
+          id="btnRefresh"
+          class="btn primary"
+        >
+          Atualizar
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="meta" id="status">
+      Última atualização: --
+    </div>
+
   </section>
 
-  <!-- DASHBOARD -->
+
   <main class="dashboard">
 
-   <!-- CARD 1 – QUANTIDADE -->
-<section class="card">
-  <h2>1 • Reclamações por Quantidade</h2>
 
-  <div class="indicators">
-    <div class="indicator">
-      <div class="value" id="totalQtd">0</div>
-      <div class="label">Total de Reclamações</div>
-    </div>
-    <div class="indicator">
-      <div class="value" id="topErroQtd">-</div>
-      <div class="label">Erro mais frequente</div>
-    </div>
-    <div class="indicator">
-      <div class="value" id="clientesAtingidos">0</div>
-      <div class="label">Clientes afetados</div>
-    </div>
-  </div>
+    <section class="card overview-card">
 
-  <div class="chart-wrap">
-    <canvas id="chartQtd"></canvas>
-  </div>
-</section>
-
-<!-- CARD 1.1 – RANKING TOP 5 ERROS -->
-<section class="card ranking-card">
-  <h2>1.1 • Ranking Top 5 Erros</h2>
-
-  <div id="rankingErros" class="ranking-container">
-    <!-- Conteúdo gerado via JS -->
-  </div>
-</section>
-
-     <!-- CARD 2 – TOP CLIENTES -->
-    <section class="card">
-      <h2>2 • Top Clientes por Reclamações</h2>
-       <div class="indicators">
-        <div class="indicator">
-          <div class="value" id="topClienteNome">-</div>
-          <div class="label">Cliente com mais RC</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="topClienteQtd">0</div>
-          <div class="label">Qtd (top)</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="totalClientes">0</div>
-          <div class="label">Clientes únicos</div>
+      <div class="card-header">
+        <div>
+          <span class="card-number">1</span>
+          <h2>Visão Geral</h2>
         </div>
       </div>
-       <div class="chart-wrap horizontal-chart">
-        <canvas id="chartClientes"></canvas>
+
+
+      <div class="indicators indicators-4">
+
+        <div class="indicator">
+          <div class="value" id="totalQtd">0</div>
+          <div class="label">Total de Reclamações</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value" id="clientesAtingidos">0</div>
+          <div class="label">Clientes Afetados</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value text-value" id="topErroQtd">-</div>
+          <div class="label">Erro Mais Frequente</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value text-value" id="setorTop">-</div>
+          <div class="label">Setor com Mais Reclamações</div>
+        </div>
+
       </div>
+
     </section>
 
-     <!-- CARD 3 (ANTIGO 5) – SETORES -->
-     <!-- Mantive a classe 'highlight' aqui para dar destaque, se preferir sem destaque, remova a classe -->
-    <section class="card highlight">
-      <h2>3 • Reclamações por Setor (Ano)</h2>
-       <div class="indicators">
+
+    <section class="card">
+
+      <div class="card-header">
+        <div>
+          <span class="card-number">2</span>
+          <h2>Reclamações por Setor</h2>
+        </div>
+      </div>
+
+
+      <div class="indicators">
+
         <div class="indicator">
           <div class="value" id="totalSetores">0</div>
-          <div class="label">Setores distintos</div>
+          <div class="label">Setores Distintos</div>
         </div>
+
+
         <div class="indicator">
-          <div class="value" id="setorTop">-</div>
-          <div class="label">Setor com mais RC</div>
+          <div class="value text-value" id="setorTopCard">-</div>
+          <div class="label">Setor com Mais RRC</div>
         </div>
+
+
         <div class="indicator">
           <div class="value" id="setorParticipacao">0%</div>
-          <div class="label">Participação no total</div>
+          <div class="label">Participação no Total</div>
         </div>
+
       </div>
-       <div class="chart-wrap">
+
+
+      <div class="chart-wrap">
         <canvas id="chartSetores"></canvas>
       </div>
+
     </section>
 
-     <!-- CARD 4 – VOLUME -->
-    <section class="card">
-      <h2>4 • Volume Acumulado no Ano (m³)</h2>
-       <div class="indicators">
-        <div class="indicator">
-          <div class="value" id="totalM3">0 m³</div>
-          <div class="label">Total acumulado</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="crescimentoM3">+0%</div>
-          <div class="label">Crescimento mensal</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="mediaM3">0 m³</div>
-          <div class="label">Média mensal</div>
+
+    <section class="card ranking-card">
+
+      <div class="card-header">
+        <div>
+          <span class="card-number">3</span>
+          <h2>Top 5 Erros</h2>
         </div>
       </div>
-       <div class="chart-wrap">
-        <canvas id="chartVolume"></canvas>
+
+
+      <div id="rankingErros" class="ranking-container">
+        <!-- Gerado via JavaScript -->
       </div>
+
     </section>
 
-     <!-- CARD 5 (ANTIGO 3) – VALOR -->
+
     <section class="card">
-      <h2>5 • Reclamações por Valor (R$)</h2>
-       <div class="indicators">
-        <div class="indicator">
-          <div class="value" id="totalValor">R$ 0</div>
-          <div class="label">Valor total</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="mediaValor">R$ 0</div>
-          <div class="label">Valor médio por RC</div>
-        </div>
-        <div class="indicator">
-          <div class="value" id="topClienteValor">-</div>
-          <div class="label">Cliente maior valor</div>
+
+      <div class="card-header">
+        <div>
+          <span class="card-number">4</span>
+          <h2>Top Clientes por Reclamações</h2>
         </div>
       </div>
-       <div class="chart-wrap">
-        <canvas id="chartValor"></canvas>
+
+
+      <div class="indicators">
+
+        <div class="indicator">
+          <div class="value text-value" id="topClienteNome">-</div>
+          <div class="label">Cliente com Mais RRC</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value" id="topClienteQtd">0</div>
+          <div class="label">Quantidade do Top Cliente</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value" id="totalClientes">0</div>
+          <div class="label">Clientes Únicos</div>
+        </div>
+
       </div>
+
+
+      <div class="chart-wrap horizontal-chart">
+        <canvas id="chartClientes"></canvas>
+      </div>
+
+    </section>
+
+
+    <section class="card">
+
+      <div class="card-header">
+        <div>
+          <span class="card-number">5</span>
+          <h2>Evolução das Reclamações</h2>
+        </div>
+      </div>
+
+
+      <div class="indicators">
+
+        <div class="indicator">
+          <div class="value" id="totalPeriodo">0</div>
+          <div class="label">Reclamações no Período</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value" id="mediaMensal">0</div>
+          <div class="label">Média Mensal</div>
+        </div>
+
+
+        <div class="indicator">
+          <div class="value" id="variacaoMensal">0%</div>
+          <div class="label">Variação do Último Mês</div>
+        </div>
+
+      </div>
+
+
+      <div class="chart-wrap">
+        <canvas id="chartEvolucao"></canvas>
+      </div>
+
+    </section>
+
+
+
+
+    <section class="card table-card">
+
+      <div class="card-header">
+
+        <div>
+          <span class="card-number">6</span>
+          <h2>Últimas Reclamações</h2>
+        </div>
+
+
+        <div class="table-actions">
+          <input
+            type="search"
+            id="buscaTabela"
+            placeholder="Buscar na tabela"
+            autocomplete="off"
+          />
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table id="tabelaReclamacoes">
+
+          <thead>
+            <tr>
+              <th>RRC</th>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Produto</th>
+              <th>Setor</th>
+              <th>Erro</th>
+              <th>Vendedor / Representante</th>
+              <th>NF</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaReclamacoesBody">
+
+            <tr class="empty-row">
+              <td colspan="8">
+                Nenhuma reclamação encontrada.
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
     </section>
 
   </main>
 
-  <!-- RODAPÉ -->
-  <footer>
-    Dashboard preparado para integração com Google Sheets • Isopack
+
+  <footer class="app-footer">
+    Dashboard RRC • Isopack
   </footer>
 
-  <!-- SCRIPTS -->
+
   <script src="js/data.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/dashboard.js"></script>
+
 </body>
 </html>
