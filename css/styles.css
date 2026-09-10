@@ -1,442 +1,2470 @@
 /* =====================================================
-   VARIÁVEIS GLOBAIS (CORES / TEMA)
+   DASHBOARD RRC - ISOPACK
+   Arquivo: css/styles.css
    ===================================================== */
-:root {
-  --iso-green: #068147;
-  --iso-dark: #045c32;
-  --card-bg: #ffffff;
-  --page-bg: linear-gradient(180deg, #f6fbf7 0%, #ffffff 100%);
-  --muted: #6b7280;
-}
+
 
 /* =====================================================
-   RESET / BASE
+   1. VARIÁVEIS GLOBAIS
    ===================================================== */
-* {
-  box-sizing: border-box;
+
+:root {
+
+  --iso-green: #068147;
+
+  --iso-green-dark: #045c32;
+
+  --iso-green-soft: #eaf7f0;
+
+  --iso-green-light: #f4fbf7;
+
+
+  --page-bg:
+    linear-gradient(
+      180deg,
+      #f4faf6 0%,
+      #f8faf9 45%,
+      #ffffff 100%
+    );
+
+
+  --card-bg: #ffffff;
+
+
+  --text-main: #111827;
+
+  --text-secondary: #374151;
+
+  --muted: #6b7280;
+
+
+  --border: #e5e7eb;
+
+  --border-dark: #d1d5db;
+
+
+  --shadow:
+    0 8px 24px
+    rgba(15, 23, 42, 0.06);
+
+
+  --shadow-hover:
+    0 14px 32px
+    rgba(15, 23, 42, 0.09);
+
+
+  --radius:
+    14px;
+
 }
+
+
+/* =====================================================
+   2. RESET
+   ===================================================== */
+
+* {
+
+  box-sizing:
+    border-box;
+
+}
+
+
+html {
+
+  min-height:
+    100%;
+
+}
+
 
 body {
-  margin: 0;
-  padding: 18px;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  background: var(--page-bg);
-  color: #0b1320;
+
+  margin:
+    0;
+
+  padding:
+    22px;
+
+  min-height:
+    100vh;
+
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+
+  background:
+    var(--page-bg);
+
+
+  color:
+    var(--text-main);
+
 }
 
+
 /* =====================================================
-   CABEÇALHO
+   3. CABEÇALHO
    ===================================================== */
+
 .app-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+
+  margin-bottom:
+    20px;
+
+
+  padding:
+    4px 2px;
+
 }
 
-.app-header img {
-  height: 42px;
+
+.app-header-left {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    15px;
+
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 20px;
-  letter-spacing: 0.2px;
+
+.app-logo {
+
+  display:
+    block;
+
+  height:
+    46px;
+
+  width:
+    auto;
+
+  object-fit:
+    contain;
+
 }
+
+
+.app-title-group {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    2px;
+
+}
+
+
+.app-title-group h1 {
+
+  margin:
+    0;
+
+
+  font-size:
+    22px;
+
+  line-height:
+    1.2;
+
+  font-weight:
+    700;
+
+
+  letter-spacing:
+    -0.3px;
+
+
+  color:
+    var(--text-main);
+
+}
+
+
+.app-title-group p {
+
+  margin:
+    0;
+
+
+  font-size:
+    12px;
+
+
+  color:
+    var(--muted);
+
+}
+
 
 /* =====================================================
-   BARRA DE FILTROS
+   4. BARRA DE FILTROS
    ===================================================== */
+
 .topbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
+
+  display:
+    flex;
+
+  align-items:
+    flex-start;
+
+  justify-content:
+    space-between;
+
+
+  gap:
+    16px;
+
+
+  margin-bottom:
+    20px;
+
+
+  padding:
+    15px;
+
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.88
+    );
+
+
+  border:
+    1px solid
+    var(--border);
+
+
+  border-radius:
+    var(--radius);
+
+
+  box-shadow:
+    0 5px 18px
+    rgba(15, 23, 42, 0.04);
+
+
+  backdrop-filter:
+    blur(8px);
+
 }
+
 
 .filters {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+
+  display:
+    flex;
+
+  align-items:
+    flex-end;
+
+  flex-wrap:
+    wrap;
+
+
+  gap:
+    12px;
+
+
+  flex:
+    1;
+
 }
 
-select,
-button {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #000;
-  background: #fff;
-  font-size: 14px;
+
+/* =====================================================
+   5. GRUPO DE FILTRO
+   ===================================================== */
+
+.filter-group {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    5px;
+
+
+  min-width:
+    145px;
+
 }
 
-button.primary {
-  background: var(--iso-green);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(44, 170, 75, 0.06);
+
+.filter-group label {
+
+  font-size:
+    11px;
+
+  font-weight:
+    600;
+
+
+  color:
+    var(--text-secondary);
+
 }
+
+
+.filter-group select,
+.filter-group input {
+
+  width:
+    100%;
+
+
+  height:
+    38px;
+
+
+  padding:
+    0 11px;
+
+
+  border:
+    1px solid
+    var(--border-dark);
+
+
+  border-radius:
+    8px;
+
+
+  background:
+    #ffffff;
+
+
+  color:
+    var(--text-main);
+
+
+  font-family:
+    inherit;
+
+  font-size:
+    13px;
+
+
+  outline:
+    none;
+
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+
+}
+
+
+.filter-group select:hover,
+.filter-group input:hover {
+
+  border-color:
+    #9ca3af;
+
+}
+
+
+.filter-group select:focus,
+.filter-group input:focus {
+
+  border-color:
+    var(--iso-green);
+
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      6,
+      129,
+      71,
+      0.12
+    );
+
+}
+
+
+.cliente-filter {
+
+  min-width:
+    190px;
+
+}
+
+
+/* =====================================================
+   6. BOTÕES DOS FILTROS
+   ===================================================== */
+
+.filter-actions {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+
+  gap:
+    8px;
+
+}
+
+
+.btn {
+
+  height:
+    38px;
+
+
+  padding:
+    0 15px;
+
+
+  border-radius:
+    8px;
+
+
+  font-family:
+    inherit;
+
+  font-size:
+    12px;
+
+  font-weight:
+    600;
+
+
+  cursor:
+    pointer;
+
+
+  transition:
+    all 0.18s ease;
+
+}
+
+
+.btn.primary {
+
+  background:
+    var(--iso-green);
+
+
+  color:
+    #ffffff;
+
+
+  border:
+    1px solid
+    var(--iso-green);
+
+
+  box-shadow:
+    0 4px 10px
+    rgba(
+      6,
+      129,
+      71,
+      0.16
+    );
+
+}
+
+
+.btn.primary:hover {
+
+  background:
+    var(--iso-green-dark);
+
+
+  border-color:
+    var(--iso-green-dark);
+
+
+  transform:
+    translateY(-1px);
+
+}
+
+
+.btn.secondary {
+
+  background:
+    #ffffff;
+
+
+  color:
+    var(--text-secondary);
+
+
+  border:
+    1px solid
+    var(--border-dark);
+
+}
+
+
+.btn.secondary:hover {
+
+  background:
+    #f9fafb;
+
+
+  border-color:
+    #9ca3af;
+
+}
+
+
+.btn:disabled {
+
+  opacity:
+    0.55;
+
+
+  cursor:
+    not-allowed;
+
+
+  transform:
+    none;
+
+}
+
+
+/* =====================================================
+   7. STATUS
+   ===================================================== */
 
 .meta {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--muted);
+
+  flex-shrink:
+    0;
+
+
+  align-self:
+    center;
+
+
+  font-size:
+    11px;
+
+
+  color:
+    var(--muted);
+
+
+  white-space:
+    nowrap;
+
 }
+
 
 /* =====================================================
-   GRID DO DASHBOARD
+   8. DROPDOWNS PERSONALIZADOS
    ===================================================== */
-.dashboard {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+
+.custom-dropdown {
+
+  position:
+    relative;
+
 }
 
-/* =====================================================
-   CARDS
-   ===================================================== */
-.card {
-  background: var(--card-bg);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 8px 22px rgba(12, 20, 30, 0.06);
-  display: flex;
-  flex-direction: column;
-}
-
-.card h2 {
-  margin: 0 0 8px 0;
-  font-size: 15px;
-  color: var(--iso-dark);
-  font-weight: 600;
-}
-
-/* =====================================================
-   INDICADORES (CARDS SUPERIORES)
-   ===================================================== */
-.indicators {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.indicator {
-  background: linear-gradient(
-    180deg,
-    rgba(13, 128, 64, 0.06),
-    rgba(13, 128, 64, 0.02)
-  );
-  border-radius: 15px;
-  padding: 8px 10px;
-  min-width: 110px;
-  display: flex;
-  flex-direction: column;
-}
-
-.indicator .value {
-  font-weight: 700;
-  font-size: 14px;
-  color: #0b4e1f;
-}
-
-.indicator .label {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* =====================================================
-   GRÁFICOS
-   ===================================================== */
-.chart-wrap {
-  flex: 1;
-}
-
-.chart-wrap canvas {
-  width: 100% !important;
-  height: 220px !important;
-}
-
-.horizontal-chart canvas {
-  height: 260px !important;
-}
-
-/* =====================================================
-   RODAPÉ
-   ===================================================== */
-footer {
-  margin-top: 18px;
-  font-size: 10px;
-  color: var(--muted);
-}
-
-/* =====================================================
-   RESPONSIVO
-   ===================================================== */
-@media (max-width: 1100px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-wrap canvas {
-    height: 230px !important;
-  }
-}
 
 .period-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+
+  min-width:
+    255px;
+
 }
 
-.period-dropdown {
-  position: relative;
-  min-width: 280px;
-  font-size: 14px;
+
+.setor-filter {
+
+  min-width:
+    220px;
+
 }
 
-.period-selected {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+
+.period-dropdown,
+.setor-dropdown {
+
+  position:
+    relative;
+
+
+  width:
+    100%;
+
 }
 
-.period-selected:hover {
-  border-color: #0969da;
+
+.dropdown-selected {
+
+  width:
+    100%;
+
+
+  height:
+    38px;
+
+
+  padding:
+    0 11px;
+
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+
+  gap:
+    12px;
+
+
+  border:
+    1px solid
+    var(--border-dark);
+
+
+  border-radius:
+    8px;
+
+
+  background:
+    #ffffff;
+
+
+  color:
+    var(--text-main);
+
+
+  font-family:
+    inherit;
+
+  font-size:
+    12px;
+
+
+  text-align:
+    left;
+
+
+  cursor:
+    pointer;
+
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+
 }
+
+
+.dropdown-selected:hover {
+
+  border-color:
+    var(--iso-green);
+
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      6,
+      129,
+      71,
+      0.08
+    );
+
+}
+
+
+.custom-dropdown.open
+.dropdown-selected {
+
+  border-color:
+    var(--iso-green);
+
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      6,
+      129,
+      71,
+      0.1
+    );
+
+}
+
 
 .arrow {
-  font-size: 12px;
+
+  flex-shrink:
+    0;
+
+
+  font-size:
+    11px;
+
+
+  transition:
+    transform 0.2s ease;
+
 }
 
-.period-menu {
-  position: absolute;
-  top: 110%;
-  left: 0;
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
-  padding: 8px;
-  display: none;
-  z-index: 20;
+
+.custom-dropdown.open
+.arrow {
+
+  transform:
+    rotate(180deg);
+
 }
 
-.period-dropdown.open .period-menu {
-  display: block;
-}
-
-.year-group {
-  margin-bottom: 6px;
-}
-
-.year-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.months {
-  margin-left: 22px;
-  margin-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.months label {
-  font-weight: 400;
-  cursor: pointer;
-}
 
 /* =====================================================
-   FILTRO DE PERÍODO – UX / DRIP
+   9. MENU DOS DROPDOWNS
    ===================================================== */
 
-.period-selected {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.dropdown-menu {
+
+  position:
+    absolute;
+
+
+  top:
+    calc(100% + 7px);
+
+  left:
+    0;
+
+
+  display:
+    none;
+
+
+  width:
+    100%;
+
+
+  min-width:
+    230px;
+
+
+  max-height:
+    360px;
+
+
+  overflow-y:
+    auto;
+
+
+  padding:
+    10px;
+
+
+  background:
+    #ffffff;
+
+
+  border:
+    1px solid
+    var(--border);
+
+
+  border-radius:
+    10px;
+
+
+  box-shadow:
+    0 14px 35px
+    rgba(
+      15,
+      23,
+      42,
+      0.14
+    );
+
+
+  z-index:
+    100;
+
 }
 
-.period-selected:hover {
-  border-color: #068147;
-  box-shadow: 0 0 0 2px rgba(6,129,71,0.15);
+
+.period-dropdown
+.dropdown-menu {
+
+  min-width:
+    280px;
+
 }
 
-.period-dropdown.open .arrow {
-  transform: rotate(180deg);
+
+.setor-dropdown
+.dropdown-menu {
+
+  min-width:
+    240px;
+
 }
 
-.arrow {
-  transition: transform 0.2s ease;
+
+.filter-menu-section {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+
+  gap:
+    3px;
+
 }
+
+
+.filter-menu-section
++
+.filter-menu-section {
+
+  margin-top:
+    12px;
+
+
+  padding-top:
+    10px;
+
+
+  border-top:
+    1px solid
+    var(--border);
+
+}
+
+
+.filter-menu-title {
+
+  margin-bottom:
+    5px;
+
+
+  font-size:
+    11px;
+
+  font-weight:
+    700;
+
+
+  color:
+    var(--iso-green-dark);
+
+
+  text-transform:
+    uppercase;
+
+
+  letter-spacing:
+    0.4px;
+
+}
+
 
 /* =====================================================
-   CARDS – MELHORIA VISUAL
+   10. CHECKBOX DOS FILTROS
+   ===================================================== */
+
+.filter-checkbox {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+
+  gap:
+    7px;
+
+
+  padding:
+    6px 7px;
+
+
+  border-radius:
+    6px;
+
+
+  cursor:
+    pointer;
+
+
+  font-size:
+    12px;
+
+
+  color:
+    var(--text-secondary);
+
+
+  transition:
+    background 0.15s ease;
+
+}
+
+
+.filter-checkbox:hover {
+
+  background:
+    var(--iso-green-light);
+
+}
+
+
+.filter-checkbox input {
+
+  width:
+    14px;
+
+  height:
+    14px;
+
+
+  margin:
+    0;
+
+
+  accent-color:
+    var(--iso-green);
+
+
+  cursor:
+    pointer;
+
+}
+
+
+.filter-checkbox-all {
+
+  margin-bottom:
+    3px;
+
+
+  font-weight:
+    600;
+
+
+  color:
+    var(--text-main);
+
+
+  background:
+    #f9fafb;
+
+}
+
+
+/* =====================================================
+   11. GRID PRINCIPAL
+   ===================================================== */
+
+.dashboard {
+
+  display:
+    grid;
+
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+
+  gap:
+    18px;
+
+}
+
+
+/* =====================================================
+   12. CARDS
    ===================================================== */
 
 .card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  min-width:
+    0;
+
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+
+  padding:
+    17px;
+
+
+  background:
+    var(--card-bg);
+
+
+  border:
+    1px solid
+    var(--border);
+
+
+  border-radius:
+    var(--radius);
+
+
+  box-shadow:
+    var(--shadow);
+
+
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
 }
+
 
 .card:hover {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+
+  transform:
+    translateY(-2px);
+
+
+  box-shadow:
+    var(--shadow-hover);
+
 }
 
-.card h2 {
-  border-left: 4px solid #068147;
-  padding-left: 8px;
-}
 
 /* =====================================================
-   FILTRO SETOR – PADRÃO IGUAL AO PERÍODO
+   13. CARDS QUE OCUPAM DUAS COLUNAS
    ===================================================== */
 
-.setor-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.overview-card,
+.table-card {
+
+  grid-column:
+    1 / -1;
+
 }
 
-.setor-dropdown {
-  position: relative;
-  min-width: 240px;
-  font-size: 14px;
+
+/* =====================================================
+   14. CABEÇALHO DOS CARDS
+   ===================================================== */
+
+.card-header {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+
+  gap:
+    12px;
+
+
+  margin-bottom:
+    14px;
+
 }
 
-.setor-selected {
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+.card-header > div:first-child {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+
+  gap:
+    8px;
+
 }
 
-.setor-selected:hover {
-  border-color: #068147;
-  box-shadow: 0 0 0 2px rgba(6,129,71,0.15);
+
+.card-header h2 {
+
+  margin:
+    0;
+
+
+  font-size:
+    15px;
+
+  font-weight:
+    650;
+
+
+  color:
+    var(--iso-green-dark);
+
 }
 
-.setor-menu {
-  position: absolute;
-  top: 110%;
-  left: 0;
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
-  padding: 8px;
-  display: none;
-  z-index: 20;
-  max-height: 260px;
-  overflow-y: auto;
+
+.card-number {
+
+  display:
+    inline-flex;
+
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+
+  width:
+    25px;
+
+  height:
+    25px;
+
+
+  border-radius:
+    7px;
+
+
+  background:
+    var(--iso-green-soft);
+
+
+  color:
+    var(--iso-green);
+
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
 }
 
-.setor-dropdown.open .setor-menu {
-  display: block;
+
+/* =====================================================
+   15. INDICADORES
+   ===================================================== */
+
+.indicators {
+
+  display:
+    grid;
+
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+
+  gap:
+    10px;
+
+
+  margin-bottom:
+    15px;
+
 }
 
-.setor-dropdown.open .arrow {
-  transform: rotate(180deg);
+
+.indicators-4 {
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
 }
 
-.setor-menu label {
-  display: flex;
-  gap: 6px;
-  font-weight: 400;
-  cursor: pointer;
-  margin-bottom: 4px;
+
+.indicator {
+
+  min-width:
+    0;
+
+
+  min-height:
+    82px;
+
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    center;
+
+
+  gap:
+    5px;
+
+
+  padding:
+    11px 13px;
+
+
+  border:
+    1px solid
+    #e5efe9;
+
+
+  border-radius:
+    11px;
+
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(
+        6,
+        129,
+        71,
+        0.065
+      ),
+      rgba(
+        6,
+        129,
+        71,
+        0.015
+      )
+    );
+
 }
 
-/* =============================
-   RANKING TOP 5 ERROS
-============================= */
+
+.indicator .value {
+
+  overflow:
+    hidden;
+
+
+  font-size:
+    22px;
+
+  line-height:
+    1.15;
+
+
+  font-weight:
+    750;
+
+
+  color:
+    var(--iso-green-dark);
+
+
+  text-overflow:
+    ellipsis;
+
+}
+
+
+.indicator
+.text-value {
+
+  font-size:
+    14px;
+
+
+  line-height:
+    1.3;
+
+
+  white-space:
+    normal;
+
+
+  overflow:
+    visible;
+
+
+  word-break:
+    break-word;
+
+}
+
+
+.indicator .label {
+
+  font-size:
+    10px;
+
+  line-height:
+    1.35;
+
+
+  font-weight:
+    500;
+
+
+  color:
+    var(--muted);
+
+}
+
+
+/* =====================================================
+   16. GRÁFICOS
+   ===================================================== */
+
+.chart-wrap {
+
+  position:
+    relative;
+
+
+  flex:
+    1;
+
+
+  min-height:
+    270px;
+
+
+  width:
+    100%;
+
+}
+
+
+.chart-wrap canvas {
+
+  width:
+    100% !important;
+
+
+  height:
+    270px !important;
+
+}
+
+
+.horizontal-chart {
+
+  min-height:
+    310px;
+
+}
+
+
+.horizontal-chart canvas {
+
+  height:
+    310px !important;
+
+}
+
+
+/* =====================================================
+   17. RANKING TOP 5
+   ===================================================== */
+
+.ranking-card {
+
+  min-height:
+    100%;
+
+}
+
 
 .ranking-container {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+
+  gap:
+    10px;
+
 }
+
 
 .ranking-item {
-  display: grid;
-  grid-template-columns: 50px 1fr 80px;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #f9fbfa;
-  transition: all 0.2s ease;
+
+  display:
+    grid;
+
+
+  grid-template-columns:
+    42px minmax(0, 1fr) 65px;
+
+
+  align-items:
+    center;
+
+
+  gap:
+    11px;
+
+
+  padding:
+    10px;
+
+
+  border:
+    1px solid
+    #edf1ef;
+
+
+  border-radius:
+    10px;
+
+
+  background:
+    #fafcfb;
+
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+
 }
+
 
 .ranking-item:hover {
-  background: #eef6f1;
-  transform: translateX(3px);
+
+  background:
+    #f1f8f4;
+
+
+  transform:
+    translateX(2px);
+
 }
+
 
 .ranking-pos {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--iso-green);
-  text-align: center;
+
+  display:
+    flex;
+
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+
+  width:
+    34px;
+
+  height:
+    34px;
+
+
+  border-radius:
+    9px;
+
+
+  background:
+    var(--iso-green-soft);
+
+
+  color:
+    var(--iso-green);
+
+
+  font-size:
+    13px;
+
+  font-weight:
+    800;
+
 }
+
 
 .ranking-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+
+  min-width:
+    0;
+
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+
+  gap:
+    6px;
+
 }
+
 
 .ranking-nome {
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
+
+  overflow:
+    hidden;
+
+
+  font-size:
+    12px;
+
+  font-weight:
+    600;
+
+
+  color:
+    var(--text-secondary);
+
+
+  white-space:
+    nowrap;
+
+
+  text-overflow:
+    ellipsis;
+
 }
+
 
 .ranking-bar {
-  width: 100%;
-  height: 6px;
-  background: #e4e7eb;
-  border-radius: 6px;
-  overflow: hidden;
+
+  width:
+    100%;
+
+
+  height:
+    6px;
+
+
+  overflow:
+    hidden;
+
+
+  border-radius:
+    999px;
+
+
+  background:
+    #e5e7eb;
+
 }
+
 
 .ranking-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--iso-green), var(--iso-dark));
-  border-radius: 6px;
-  transition: width 0.4s ease;
+
+  height:
+    100%;
+
+
+  border-radius:
+    999px;
+
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--iso-green),
+      #0e9f5b
+    );
+
+
+  transition:
+    width 0.35s ease;
+
 }
+
 
 .ranking-qtd {
-  text-align: right;
-  font-size: 13px;
-  font-weight: 600;
-  color: #111;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+
+  align-items:
+    flex-end;
+
+
+  gap:
+    2px;
+
+
+  font-size:
+    13px;
+
+
+  color:
+    var(--text-main);
+
 }
 
+
+.ranking-qtd strong {
+
+  font-size:
+    14px;
+
+}
+
+
 .ranking-qtd span {
-  display: block;
-  font-size: 11px;
-  color: #6b7280;
-  font-weight: 400;
+
+  font-size:
+    10px;
+
+
+  color:
+    var(--muted);
+
+}
+
+
+.ranking-empty {
+
+  margin:
+    0;
+
+
+  padding:
+    30px 15px;
+
+
+  color:
+    var(--muted);
+
+
+  font-size:
+    12px;
+
+
+  text-align:
+    center;
+
+}
+
+
+/* =====================================================
+   18. TABELA
+   ===================================================== */
+
+.table-card {
+
+  overflow:
+    hidden;
+
+}
+
+
+.table-actions {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+
+  gap:
+    8px;
+
+}
+
+
+.table-actions input {
+
+  width:
+    230px;
+
+
+  height:
+    36px;
+
+
+  padding:
+    0 11px;
+
+
+  border:
+    1px solid
+    var(--border-dark);
+
+
+  border-radius:
+    8px;
+
+
+  background:
+    #ffffff;
+
+
+  font-family:
+    inherit;
+
+  font-size:
+    12px;
+
+
+  outline:
+    none;
+
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+
+}
+
+
+.table-actions input:focus {
+
+  border-color:
+    var(--iso-green);
+
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      6,
+      129,
+      71,
+      0.1
+    );
+
+}
+
+
+.table-wrap {
+
+  width:
+    100%;
+
+
+  overflow-x:
+    auto;
+
+
+  border:
+    1px solid
+    var(--border);
+
+
+  border-radius:
+    10px;
+
+}
+
+
+#tabelaReclamacoes {
+
+  width:
+    100%;
+
+
+  min-width:
+    1050px;
+
+
+  border-collapse:
+    collapse;
+
+
+  background:
+    #ffffff;
+
+}
+
+
+#tabelaReclamacoes thead {
+
+  background:
+    #f4f7f5;
+
+}
+
+
+#tabelaReclamacoes th {
+
+  padding:
+    10px 12px;
+
+
+  border-bottom:
+    1px solid
+    var(--border);
+
+
+  color:
+    var(--text-secondary);
+
+
+  font-size:
+    10px;
+
+  font-weight:
+    700;
+
+
+  text-align:
+    left;
+
+
+  text-transform:
+    uppercase;
+
+
+  letter-spacing:
+    0.35px;
+
+
+  white-space:
+    nowrap;
+
+}
+
+
+#tabelaReclamacoes td {
+
+  padding:
+    10px 12px;
+
+
+  border-bottom:
+    1px solid
+    #f0f2f1;
+
+
+  color:
+    var(--text-secondary);
+
+
+  font-size:
+    11px;
+
+
+  vertical-align:
+    middle;
+
+}
+
+
+#tabelaReclamacoes
+tbody tr {
+
+  transition:
+    background 0.15s ease;
+
+}
+
+
+#tabelaReclamacoes
+tbody tr:hover {
+
+  background:
+    var(--iso-green-light);
+
+}
+
+
+#tabelaReclamacoes
+tbody tr:last-child td {
+
+  border-bottom:
+    none;
+
+}
+
+
+#tabelaReclamacoes
+td:first-child {
+
+  color:
+    var(--iso-green-dark);
+
+
+  font-weight:
+    700;
+
+}
+
+
+.empty-row td {
+
+  padding:
+    30px !important;
+
+
+  color:
+    var(--muted) !important;
+
+
+  text-align:
+    center !important;
+
+}
+
+
+/* =====================================================
+   19. SCROLLBAR DOS DROPDOWNS / TABELA
+   ===================================================== */
+
+.dropdown-menu::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar {
+
+  width:
+    7px;
+
+  height:
+    7px;
+
+}
+
+
+.dropdown-menu::-webkit-scrollbar-track,
+.table-wrap::-webkit-scrollbar-track {
+
+  background:
+    #f3f4f6;
+
+}
+
+
+.dropdown-menu::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb {
+
+  background:
+    #c9d0cc;
+
+
+  border-radius:
+    20px;
+
+}
+
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover,
+.table-wrap::-webkit-scrollbar-thumb:hover {
+
+  background:
+    #9ca3af;
+
+}
+
+
+/* =====================================================
+   20. RODAPÉ
+   ===================================================== */
+
+.app-footer {
+
+  margin-top:
+    22px;
+
+
+  padding:
+    8px 2px;
+
+
+  color:
+    var(--muted);
+
+
+  font-size:
+    10px;
+
+
+  text-align:
+    center;
+
+}
+
+
+/* =====================================================
+   21. RESPONSIVO - 1250px
+   ===================================================== */
+
+@media (
+  max-width: 1250px
+) {
+
+  .topbar {
+
+    flex-direction:
+      column;
+
+  }
+
+
+  .meta {
+
+    align-self:
+      flex-end;
+
+  }
+
+
+  .filters {
+
+    width:
+      100%;
+
+  }
+
+
+  .indicators-4 {
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+  }
+
+}
+
+
+/* =====================================================
+   22. RESPONSIVO - 1050px
+   ===================================================== */
+
+@media (
+  max-width: 1050px
+) {
+
+  body {
+
+    padding:
+      15px;
+
+  }
+
+
+  .dashboard {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .overview-card,
+  .table-card {
+
+    grid-column:
+      auto;
+
+  }
+
+
+  .filters {
+
+    display:
+      grid;
+
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+
+    align-items:
+      end;
+
+  }
+
+
+  .filter-group,
+  .period-filter,
+  .setor-filter,
+  .cliente-filter {
+
+    min-width:
+      0;
+
+  }
+
+
+  .filter-actions {
+
+    align-self:
+      end;
+
+  }
+
+}
+
+
+/* =====================================================
+   23. RESPONSIVO - 750px
+   ===================================================== */
+
+@media (
+  max-width: 750px
+) {
+
+  body {
+
+    padding:
+      12px;
+
+  }
+
+
+  .app-header {
+
+    margin-bottom:
+      14px;
+
+  }
+
+
+  .app-logo {
+
+    height:
+      38px;
+
+  }
+
+
+  .app-title-group h1 {
+
+    font-size:
+      18px;
+
+  }
+
+
+  .app-title-group p {
+
+    font-size:
+      10px;
+
+  }
+
+
+  .topbar {
+
+    padding:
+      12px;
+
+  }
+
+
+  .filters {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .filter-actions {
+
+    width:
+      100%;
+
+  }
+
+
+  .filter-actions .btn {
+
+    flex:
+      1;
+
+  }
+
+
+  .meta {
+
+    align-self:
+      flex-start;
+
+  }
+
+
+  .indicators,
+  .indicators-4 {
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+  }
+
+
+  .indicator {
+
+    min-height:
+      74px;
+
+  }
+
+
+  .indicator .value {
+
+    font-size:
+      19px;
+
+  }
+
+
+  .indicator .text-value {
+
+    font-size:
+      12px;
+
+  }
+
+
+  .card {
+
+    padding:
+      14px;
+
+  }
+
+
+  .chart-wrap canvas {
+
+    height:
+      245px !important;
+
+  }
+
+
+  .horizontal-chart canvas {
+
+    height:
+      300px !important;
+
+  }
+
+
+  .table-card
+  .card-header {
+
+    align-items:
+      flex-start;
+
+
+    flex-direction:
+      column;
+
+  }
+
+
+  .table-actions {
+
+    width:
+      100%;
+
+  }
+
+
+  .table-actions input {
+
+    width:
+      100%;
+
+  }
+
+}
+
+
+/* =====================================================
+   24. RESPONSIVO - 480px
+   ===================================================== */
+
+@media (
+  max-width: 480px
+) {
+
+  body {
+
+    padding:
+      9px;
+
+  }
+
+
+  .app-header-left {
+
+    align-items:
+      flex-start;
+
+  }
+
+
+  .app-logo {
+
+    height:
+      34px;
+
+  }
+
+
+  .app-title-group h1 {
+
+    font-size:
+      16px;
+
+  }
+
+
+  .app-title-group p {
+
+    display:
+      none;
+
+  }
+
+
+  .indicators,
+  .indicators-4 {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .indicator {
+
+    min-height:
+      66px;
+
+  }
+
+
+  .dropdown-menu {
+
+    min-width:
+      100%;
+
+  }
+
+
+  .period-dropdown
+  .dropdown-menu,
+
+  .setor-dropdown
+  .dropdown-menu {
+
+    min-width:
+      100%;
+
+  }
+
+
+  .ranking-item {
+
+    grid-template-columns:
+      35px
+      minmax(0, 1fr)
+      55px;
+
+
+    gap:
+      7px;
+
+
+    padding:
+      8px;
+
+  }
+
+
+  .ranking-pos {
+
+    width:
+      30px;
+    height: 30px;
+    font-size:
+      11px;
+  }
+
+
+  .ranking-nome {
+
+    font-size:
+      11px;
+
+  }
+
+
+  .ranking-qtd {
+
+    font-size:
+      11px;
+
+  }
+
 }
