@@ -2111,20 +2111,25 @@ function atualizarTabela(
   }
 
 
-  if (
-    typeof ordenarPorMaisRecentes ===
-    "function"
-  ) {
+ /* =====================================================
+   ORDENA PELO Nº DA RRC
+   Maior número aparece primeiro
+   ===================================================== */
 
-    resultado =
-      ordenarPorMaisRecentes(
-        resultado
-      );
+resultado.sort(function(a, b) {
 
-  }
+  const rrcA =
+    Number(a.rrc) || 0;
+
+  const rrcB =
+    Number(b.rrc) || 0;
+
+  return rrcB - rrcA;
+
+});
 
 
-  /* Mostra as 25 mais recentes */
+  /* Mostra as 25 últimas RRCs */
 
   resultado =
     resultado.slice(
