@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard RRC - Isopack</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="assets/vendor/chart.umd.min.js"></script>
+  <script src="assets/vendor/chartjs-plugin-datalabels.min.js"></script>
 
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -128,7 +128,7 @@
     </div>
 
 
-    <div class="meta" id="status">
+    <div class="meta" id="status" role="status" aria-live="polite">
       Última atualização: --
     </div>
 
@@ -136,6 +136,8 @@
 
 
   <main class="dashboard">
+
+    <p id="avisoGraficos" class="chart-warning" role="status" hidden>Não foi possível carregar a biblioteca de gráficos. Os indicadores e a tabela continuam disponíveis. Recarregue a página para tentar novamente.</p>
 
 
     <section class="card overview-card">
@@ -299,7 +301,7 @@
 
         <div class="indicator">
           <div class="value" id="variacaoMensal">0%</div>
-          <div class="label">Variação do Último Mês</div>
+          <div class="label" title="Compara o último mês com registros ao mês imediatamente anterior. Sem base indica que o mês anterior não tem registros.">Variação do Último Mês</div>
         </div>
 
       </div>
@@ -328,28 +330,50 @@
           <input
             type="search"
             id="buscaTabela"
+            aria-label="Buscar em todas as reclamações da tabela"
             placeholder="Buscar na tabela"
             autocomplete="off"
           />
+          <button type="button" id="btnLimparTabela" class="btn secondary">Limpar filtros da tabela</button>
         </div>
 
       </div>
 
+      <div class="table-filters" role="group" aria-label="Filtros de Últimas Reclamações">
+        <div class="table-filter">
+          <label for="tabelaFiltroSetor">Setor</label>
+          <select id="tabelaFiltroSetor"><option value="">Todos os setores</option></select>
+        </div>
+        <div class="table-filter">
+          <label for="tabelaFiltroErro">Erro</label>
+          <select id="tabelaFiltroErro"><option value="">Todos os erros</option></select>
+        </div>
+        <div class="table-filter">
+          <label for="tabelaDataInicio">Data inicial</label>
+          <input type="date" id="tabelaDataInicio" />
+        </div>
+        <div class="table-filter">
+          <label for="tabelaDataFim">Data final</label>
+          <input type="date" id="tabelaDataFim" />
+        </div>
+      </div>
+      <p id="tabelaFiltroAviso" class="table-filter-warning" role="status" hidden></p>
+      <p class="table-hint" id="tabelaAjuda">Clique no título de qualquer coluna para alternar a ordenação. Os filtros acima afetam somente esta tabela.</p>
 
       <div class="table-wrap">
 
-        <table id="tabelaReclamacoes">
+        <table id="tabelaReclamacoes" aria-describedby="tabelaAjuda">
 
           <thead>
             <tr>
-              <th>RRC</th>
-              <th>Data</th>
-              <th>Cliente</th>
-              <th>Produto</th>
-              <th>Setor</th>
-              <th>Erro</th>
-              <th>Vendedor / Representante</th>
-              <th>NF</th>
+              <th scope="col" aria-sort="descending"><button type="button" class="table-sort" data-sort="rrc">RRC <span class="sort-arrow" aria-hidden="true">↓</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="data">Data <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="cliente">Cliente <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="produto">Produto <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="setor">Setor <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="erro">Erro <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="responsavelComercial">Vendedor / Representante <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
+              <th scope="col" aria-sort="none"><button type="button" class="table-sort" data-sort="nf">NF <span class="sort-arrow" aria-hidden="true">↕</span></button></th>
             </tr>
           </thead>
 
@@ -367,6 +391,20 @@
 
       </div>
 
+      <div class="table-pagination">
+        <p id="tabelaResumo" role="status" aria-live="polite">0 reclamações</p>
+        <div class="table-page-actions">
+          <label for="tabelaPorPagina">Por página</label>
+          <select id="tabelaPorPagina">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <button type="button" id="tabelaAnterior" class="btn secondary" aria-label="Página anterior" disabled>←</button>
+          <span id="tabelaPagina">Página 1 de 1</span>
+          <button type="button" id="tabelaProxima" class="btn secondary" aria-label="Próxima página" disabled>→</button>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -377,8 +415,8 @@
   </footer>
 
 
-  <script src="js/data.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/dashboard.js"></script>
 
