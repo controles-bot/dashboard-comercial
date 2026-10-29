@@ -1967,6 +1967,143 @@ td:first-child {
 }
 
 
+/* Ordenação, filtros locais e navegação da tabela. */
+.table-sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sort-arrow {
+  color: var(--muted);
+  font-size: 16px;
+}
+
+#tabelaReclamacoes th[aria-sort="ascending"],
+#tabelaReclamacoes th[aria-sort="descending"] {
+  background: var(--iso-green-soft);
+  color: var(--iso-green-dark);
+}
+
+th[aria-sort="ascending"] .sort-arrow,
+th[aria-sort="descending"] .sort-arrow {
+  color: var(--iso-green);
+}
+
+.table-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafcfb;
+}
+
+.table-filter {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 5px;
+}
+
+.table-filter label,
+.table-page-actions label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.table-filter input,
+.table-filter select,
+.table-page-actions select {
+  min-width: 0;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-dark);
+  border-radius: 7px;
+  background: white;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.table-sort:focus-visible,
+.table-filter :is(input, select):focus-visible,
+.table-page-actions :is(button, select):focus-visible,
+.table-actions button:focus-visible {
+  outline: 2px solid var(--iso-green);
+  outline-offset: 3px;
+}
+
+.table-hint,
+#tabelaResumo {
+  margin: 10px 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.table-filter-warning,
+.chart-warning {
+  color: #9a3412;
+  font-size: 12px;
+}
+
+.chart-warning {
+  grid-column: 1 / -1;
+  padding: 12px;
+  margin: 0;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  background: #fff7ed;
+}
+
+.table-pagination,
+.table-page-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-pagination {
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.table-page-actions {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.table-page-actions select {
+  width: auto;
+}
+
+.table-page-actions .btn {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.table-actions {
+  flex-wrap: wrap;
+}
+
 /* =====================================================
    19. SCROLLBAR DOS DROPDOWNS / TABELA
    ===================================================== */
@@ -2334,6 +2471,19 @@ td:first-child {
     width:
       100%;
 
+  }
+
+  .table-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .table-actions input {
+    flex: 1 1 180px;
+  }
+
+  .table-pagination {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
 }
