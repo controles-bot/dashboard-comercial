@@ -5,9 +5,6 @@
    Dashboard RRC - Isopack
    ===================================================== */
 
-console.log("utils.js carregado");
-
-
 /* =====================================================
    1. FORMATAÇÃO
    ===================================================== */
@@ -24,7 +21,6 @@ function formatNumber(value, decimals = 0) {
   ).format(numero);
 }
 
-
 function formatPercent(value, decimals = 0) {
   const numero = Number(value) || 0;
 
@@ -39,62 +35,20 @@ function formatPercent(value, decimals = 0) {
   );
 }
 
-
 function formatDateBR(value) {
-  if (!value) {
-    return "-";
-  }
-
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) {
-      return "-";
-    }
-
-    return value.toLocaleDateString("pt-BR");
-  }
-
-  const texto = String(value).trim();
-
-  if (!texto) {
-    return "-";
-  }
-
-  if (texto.includes("/")) {
-    return texto.split(" ")[0];
-  }
-
-  if (texto.includes("-")) {
-    const dataParte = texto.split("T")[0];
-    const partes = dataParte.split("-");
-
-    if (partes.length === 3) {
-      return (
-        partes[2] +
-        "/" +
-        partes[1] +
-        "/" +
-        partes[0]
-      );
-    }
-  }
-
-  return texto;
+  if (!value) return "-";
+  const data = value instanceof Date ? value : extrairDataInfo(value).data;
+  return data && Number.isFinite(data.getTime()) ? data.toLocaleDateString("pt-BR") : "-";
 }
-
 
 /* =====================================================
    2. TEXTO / NORMALIZAÇÃO
    ===================================================== */
 
 function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return String(value ?? "").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
 }
-
 
 function isEmpty(value) {
   return (
@@ -103,7 +57,6 @@ function isEmpty(value) {
     String(value).trim() === ""
   );
 }
-
 
 /* =====================================================
    3. CONTAGENS BÁSICAS
@@ -132,34 +85,19 @@ function countUnique(arr, key) {
   return unicos.size;
 }
 
-
 function countBy(arr, key) {
-  const contagem = {};
-
-  if (!Array.isArray(arr)) {
-    return contagem;
+  const grupos = new Map();
+  if (Array.isArray(arr)) {
+    arr.forEach(function(item) {
+      const nome = String(item?.[key] ?? "").trim();
+      if (!nome) return;
+      const chave = normalizeText(nome);
+      if (!grupos.has(chave)) grupos.set(chave, { nome, qtd: 0 });
+      grupos.get(chave).qtd++;
+    });
   }
-
-  arr.forEach(function(item) {
-    if (!item) {
-      return;
-    }
-
-    const valor = String(
-      item[key] || ""
-    ).trim();
-
-    if (!valor) {
-      return;
-    }
-
-    contagem[valor] =
-      (contagem[valor] || 0) + 1;
-  });
-
-  return contagem;
+  return Object.fromEntries(Array.from(grupos.values(), grupo => [grupo.nome, grupo.qtd]));
 }
-
 
 /* =====================================================
    4. ORDENAÇÃO / RANKINGS
@@ -181,7 +119,6 @@ function sortCountEntries(countObject) {
   });
 }
 
-
 function getTopEntry(arr, key) {
   const contagem =
     countBy(arr, key);
@@ -202,7 +139,6 @@ function getTopEntry(arr, key) {
   };
 }
 
-
 function getTopFrequent(arr, key) {
   const top =
     getTopEntry(arr, key);
@@ -222,7 +158,6 @@ function getTopFrequent(arr, key) {
   );
 }
 
-
 function getRanking(arr, key, limit = 5) {
   const contagem =
     countBy(arr, key);
@@ -240,37 +175,18 @@ function getRanking(arr, key, limit = 5) {
     });
 }
 
-
 /* =====================================================
    5. RESPONSÁVEL COMERCIAL
    ===================================================== */
 
 function getResponsavelComercial(item) {
-  if (!item) {
-    return "";
-  }
-
-  const vendedor =
-    String(
-      item.vendedor || ""
-    ).trim();
-
-  const representante =
-    String(
-      item.representante || ""
-    ).trim();
-
-  if (vendedor) {
-    return vendedor;
-  }
-
-  if (representante) {
-    return representante;
-  }
-
-  return "Não informado";
+  const nomes = new Map();
+  [item?.vendedor, item?.representante].forEach(function(valor) {
+    const nome = String(valor ?? "").trim();
+    if (nome && !nomes.has(normalizeText(nome))) nomes.set(normalizeText(nome), nome);
+  });
+  return Array.from(nomes.values()).join(" / ") || "Não informado";
 }
-
 
 function prepararResponsaveis(data) {
   if (!Array.isArray(data)) {
@@ -286,7 +202,6 @@ function prepararResponsaveis(data) {
     };
   });
 }
-
 
 /* =====================================================
    6. FILTRO PRINCIPAL
@@ -327,7 +242,6 @@ function filtrarDados(
   const clienteNormalizado =
     normalizeText(cliente);
 
-
   return data.filter(function(item) {
 
     const matchAno =
@@ -336,13 +250,11 @@ function filtrarDados(
         String(item.ano)
       );
 
-
     const matchMes =
       mesesNormalizados.length === 0 ||
       mesesNormalizados.includes(
         String(item.mesNum)
       );
-
 
     const itemSetor =
       normalizeText(item.setor);
@@ -353,20 +265,17 @@ function filtrarDados(
         itemSetor
       );
 
-
     const matchVendedor =
       !vendedorNormalizado ||
       normalizeText(
         item.vendedor
       ) === vendedorNormalizado;
 
-
     const matchRepresentante =
       !representanteNormalizado ||
       normalizeText(
         item.representante
       ) === representanteNormalizado;
-
 
     const matchCliente =
       !clienteNormalizado ||
@@ -375,7 +284,6 @@ function filtrarDados(
       ).includes(
         clienteNormalizado
       );
-
 
     return (
       matchAno &&
@@ -387,7 +295,6 @@ function filtrarDados(
     );
   });
 }
-
 
 /* =====================================================
    7. COMPATIBILIDADE COM O CÓDIGO ANTIGO
@@ -408,7 +315,6 @@ function filtrarPorPeriodo(
     }
   );
 }
-
 
 /* =====================================================
    8. ANOS DISPONÍVEIS
@@ -436,7 +342,6 @@ function getAvailableYears(data) {
     return b - a;
   });
 }
-
 
 /* =====================================================
    9. VALORES ÚNICOS PARA FILTROS
@@ -481,7 +386,6 @@ function getUniqueValues(data, key) {
   });
 }
 
-
 /* =====================================================
    10. SÉRIE MENSAL DE RECLAMAÇÕES
    ===================================================== */
@@ -509,26 +413,12 @@ function gerarSerieMensal(data) {
   return serie;
 }
 
-
 /* =====================================================
    11. SÉRIE MENSAL DETALHADA
    ===================================================== */
 
 function gerarSerieMensalDetalhada(data) {
-  const labels = [
-    "Jan",
-    "Fev",
-    "Mar",
-    "Abr",
-    "Mai",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Set",
-    "Out",
-    "Nov",
-    "Dez"
-  ];
+  const labels = MESES_ABREVIADOS;
 
   const valores =
     gerarSerieMensal(data);
@@ -539,118 +429,33 @@ function gerarSerieMensalDetalhada(data) {
   };
 }
 
-
 /* =====================================================
    12. MÉDIA MENSAL
    ===================================================== */
 
 function calcularMediaMensal(data) {
-  if (
-    !Array.isArray(data) ||
-    data.length === 0
-  ) {
-    return 0;
-  }
-
-  const mesesComDados =
-    new Set();
-
-  data.forEach(function(item) {
-    if (
-      item.ano &&
-      item.mesNum
-    ) {
-      mesesComDados.add(
-        item.ano +
-        "-" +
-        item.mesNum
-      );
-    }
-  });
-
-  if (mesesComDados.size === 0) {
-    return 0;
-  }
-
-  return (
-    data.length /
-    mesesComDados.size
-  );
+  const validos = (Array.isArray(data) ? data : []).filter(item => item.ano && item.mesNum);
+  const meses = new Set(validos.map(item => item.ano + "-" + item.mesNum));
+  return meses.size ? validos.length / meses.size : 0;
 }
-
 
 /* =====================================================
    13. VARIAÇÃO ENTRE OS DOIS ÚLTIMOS MESES
    ===================================================== */
 
 function calcularVariacaoMensal(data) {
-  if (
-    !Array.isArray(data) ||
-    data.length === 0
-  ) {
-    return 0;
-  }
-
-  const agrupado = {};
-
-  data.forEach(function(item) {
-    if (
-      !item.ano ||
-      !item.mesNum
-    ) {
-      return;
-    }
-
-    const chave =
-      String(item.ano) +
-      "-" +
-      String(item.mesNum)
-        .padStart(2, "0");
-
-    agrupado[chave] =
-      (agrupado[chave] || 0) + 1;
+  const contagem = new Map();
+  (Array.isArray(data) ? data : []).forEach(function(item) {
+    if (!item.ano || !item.mesNum) return;
+    const mes = item.ano * 12 + item.mesNum - 1;
+    contagem.set(mes, (contagem.get(mes) || 0) + 1);
   });
-
-
-  const meses =
-    Object.keys(agrupado)
-      .sort();
-
-
-  if (meses.length < 2) {
-    return 0;
-  }
-
-
-  const mesAtual =
-    meses[meses.length - 1];
-
-  const mesAnterior =
-    meses[meses.length - 2];
-
-
-  const atual =
-    agrupado[mesAtual] || 0;
-
-  const anterior =
-    agrupado[mesAnterior] || 0;
-
-
-  if (anterior === 0) {
-    return atual > 0
-      ? 100
-      : 0;
-  }
-
-
-  return (
-    (
-      (atual - anterior) /
-      anterior
-    ) * 100
-  );
+  if (!contagem.size) return 0;
+  const ultimo = Math.max(...contagem.keys());
+  const anterior = contagem.get(ultimo - 1) || 0;
+  // Sem registros no mês anterior, não há percentual calculável.
+  return anterior ? ((contagem.get(ultimo) - anterior) / anterior) * 100 : null;
 }
-
 
 /* =====================================================
    14. PARTICIPAÇÃO DO TOP NO TOTAL
@@ -683,41 +488,13 @@ function calcularParticipacaoTop(
   ) * 100;
 }
 
-
 /* =====================================================
    15. ORDENA RECLAMAÇÕES MAIS RECENTES
    ===================================================== */
 
 function ordenarPorMaisRecentes(data) {
-  if (!Array.isArray(data)) {
-    return [];
-  }
-
-  return [...data].sort(function(a, b) {
-
-    const timestampA =
-      Number(a.timestamp) || 0;
-
-    const timestampB =
-      Number(b.timestamp) || 0;
-
-
-    if (timestampB !== timestampA) {
-      return timestampB - timestampA;
-    }
-
-
-    const rrcA =
-      Number(a.rrc) || 0;
-
-    const rrcB =
-      Number(b.rrc) || 0;
-
-
-    return rrcB - rrcA;
-  });
+  return ordenarReclamacoes(data, "data", "desc");
 }
-
 
 /* =====================================================
    16. BUSCA LIVRE NA TABELA
@@ -738,12 +515,13 @@ function buscarNasReclamacoes(
     return [...data];
   }
 
-
   return data.filter(function(item) {
 
     const campos = [
       item.rrc,
       item.dataOcorrenciaTexto,
+      item.dataRegistroTexto,
+      formatDateBR(getDataReclamacao(item)),
       item.cliente,
       item.produto,
       item.setor,
@@ -757,7 +535,6 @@ function buscarNasReclamacoes(
       item.estado
     ];
 
-
     return campos.some(function(valor) {
       return normalizeText(
         valor
@@ -767,7 +544,6 @@ function buscarNasReclamacoes(
     });
   });
 }
-
 
 /* =====================================================
    17. ARREDONDAMENTO
@@ -790,7 +566,6 @@ function round(value, decimals = 2) {
   );
 }
 
-
 /* =====================================================
    18. RESUMO DO DASHBOARD
    ===================================================== */
@@ -800,7 +575,6 @@ function calcularResumoDashboard(data) {
     Array.isArray(data)
       ? data
       : [];
-
 
   const topErro =
     getTopEntry(
@@ -820,19 +594,16 @@ function calcularResumoDashboard(data) {
       "cliente"
     );
 
-
   const dadosResponsavel =
     prepararResponsaveis(
       dados
     );
-
 
   const topResponsavel =
     getTopEntry(
       dadosResponsavel,
       "responsavelComercial"
     );
-
 
   return {
     totalReclamacoes:
@@ -892,85 +663,48 @@ function calcularResumoDashboard(data) {
   };
 }
 
+/* Operações da tabela: preservam o conjunto de dados usado pelo dashboard. */
+const comparadorTabela = new Intl.Collator("pt-BR", { numeric: true, sensitivity: "base" });
 
-/* =====================================================
-   19. EXPORTAÇÃO GLOBAL
-   ===================================================== */
+function getDataReclamacao(item) {
+  return item.dataOcorrencia || item.dataRegistro || null;
+}
 
-window.formatNumber =
-  formatNumber;
+function valorColunaReclamacao(item, coluna) {
+  if (coluna === "data") return getDataReclamacao(item)?.getTime() ?? null;
+  if (coluna === "responsavelComercial") return getResponsavelComercial(item);
+  return item[coluna] ?? "";
+}
 
-window.formatPercent =
-  formatPercent;
+function ordenarReclamacoes(data, coluna = "rrc", direcao = "desc") {
+  const colunas = ["rrc", "data", "cliente", "produto", "setor", "erro", "responsavelComercial", "nf"];
+  if (!colunas.includes(coluna)) coluna = "rrc";
+  const fator = direcao === "asc" ? 1 : -1;
+  return [...(Array.isArray(data) ? data : [])].sort(function(a, b) {
+    const valorA = valorColunaReclamacao(a, coluna);
+    const valorB = valorColunaReclamacao(b, coluna);
+    if (isEmpty(valorA) !== isEmpty(valorB)) return isEmpty(valorA) ? 1 : -1;
+    const comparacao = coluna === "data"
+      ? Number(valorA) - Number(valorB)
+      : comparadorTabela.compare(String(valorA), String(valorB));
+    return comparacao * fator ||
+      comparadorTabela.compare(String(b.rrc ?? ""), String(a.rrc ?? "")) ||
+      (a.indiceOriginal ?? 0) - (b.indiceOriginal ?? 0);
+  });
+}
 
-window.formatDateBR =
-  formatDateBR;
+function filtrarTabelaReclamacoes(data, { termo = "", setor = "", erro = "", inicio = "", fim = "" } = {}) {
+  const dataInicio = inicio ? extrairDataInfo(inicio).timestamp : null;
+  const dataFim = fim ? extrairDataInfo(fim).timestamp : null;
+  return buscarNasReclamacoes(data, termo).filter(function(item) {
+    if (setor && normalizeText(item.setor) !== normalizeText(setor)) return false;
+    if (erro && normalizeText(item.erro) !== normalizeText(erro)) return false;
+    const data = getDataReclamacao(item);
+    if ((inicio || fim) && !data) return false;
+    if (inicio && data.getTime() < dataInicio) return false;
+    if (fim && data.getTime() > dataFim) return false;
+    return true;
+  });
+}
 
-window.normalizeText =
-  normalizeText;
-
-window.isEmpty =
-  isEmpty;
-
-window.countUnique =
-  countUnique;
-
-window.countBy =
-  countBy;
-
-window.sortCountEntries =
-  sortCountEntries;
-
-window.getTopEntry =
-  getTopEntry;
-
-window.getTopFrequent =
-  getTopFrequent;
-
-window.getRanking =
-  getRanking;
-
-window.getResponsavelComercial =
-  getResponsavelComercial;
-
-window.prepararResponsaveis =
-  prepararResponsaveis;
-
-window.filtrarDados =
-  filtrarDados;
-
-window.filtrarPorPeriodo =
-  filtrarPorPeriodo;
-
-window.getAvailableYears =
-  getAvailableYears;
-
-window.getUniqueValues =
-  getUniqueValues;
-
-window.gerarSerieMensal =
-  gerarSerieMensal;
-
-window.gerarSerieMensalDetalhada =
-  gerarSerieMensalDetalhada;
-
-window.calcularMediaMensal =
-  calcularMediaMensal;
-
-window.calcularVariacaoMensal =
-  calcularVariacaoMensal;
-
-window.calcularParticipacaoTop =
-  calcularParticipacaoTop;
-
-window.ordenarPorMaisRecentes =
-  ordenarPorMaisRecentes;
-
-window.buscarNasReclamacoes =
-  buscarNasReclamacoes;
-
-window.round =
-  round;
-
-window.calcularResumoDashboard =
-  calcularResumoDashboard;
+const MESES_ABREVIADOS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];

@@ -11,16 +11,12 @@
    - Busca na tabela
    ===================================================== */
 
-console.log("dashboard.js carregado");
-
-
 /* =====================================================
    1. ELEMENTOS
    ===================================================== */
 
 const btnReset =
   document.getElementById("btnReset");
-
 
 /* PERÍODO */
 
@@ -44,7 +40,6 @@ const periodMenu =
     "periodMenu"
   );
 
-
 /* SETOR */
 
 const setorDropdown =
@@ -67,14 +62,12 @@ const setorMenu =
     "setorMenu"
   );
 
-
 /* VENDEDOR */
 
 const filtroVendedor =
   document.getElementById(
     "filtroVendedor"
   );
-
 
 /* REPRESENTANTE */
 
@@ -83,14 +76,12 @@ const filtroRepresentante =
     "filtroRepresentante"
   );
 
-
 /* CLIENTE */
 
 const filtroCliente =
   document.getElementById(
     "filtroCliente"
   );
-
 
 /* TABELA */
 
@@ -103,7 +94,6 @@ const tabelaBody =
   document.getElementById(
     "tabelaReclamacoesBody"
   );
-
 
 /* =====================================================
    2. ESTADO INTERNO
@@ -118,7 +108,8 @@ let dadosFiltradosAtuais = [];
 let timerBuscaCliente = null;
 
 let timerBuscaTabela = null;
-
+let assinaturaFiltrosTabela = "";
+const estadoTabela = { coluna: "rrc", direcao: "desc", pagina: 1, tamanho: 25 };
 
 /* =====================================================
    3. FUNÇÃO PRINCIPAL
@@ -136,7 +127,6 @@ window.atualizarDashboard =
         ? window.DADOS_RC
         : [];
 
-
     /* ===============================================
        GERA / ATUALIZA FILTROS
        =============================================== */
@@ -145,14 +135,12 @@ window.atualizarDashboard =
       dados
     );
 
-
     /* ===============================================
        LÊ FILTROS
        =============================================== */
 
     const filtros =
       lerFiltrosAtivos();
-
 
     /* ===============================================
        APLICA FILTROS
@@ -164,26 +152,11 @@ window.atualizarDashboard =
         filtros
       );
 
-
     dadosFiltradosAtuais =
       dadosFiltrados;
 
-
     window.DADOS_RC_FILTRADOS =
       dadosFiltrados;
-
-
-    console.log(
-      "Filtros ativos:",
-      filtros
-    );
-
-
-    console.log(
-      "Reclamações filtradas:",
-      dadosFiltrados.length
-    );
-
 
     /* ===============================================
        ATUALIZA DASHBOARD
@@ -193,29 +166,23 @@ window.atualizarDashboard =
       dadosFiltrados
     );
 
-
     atualizarGraficos(
       dadosFiltrados,
       filtros
     );
 
-
     atualizarRankingErros(
       dadosFiltrados
     );
 
-
-    atualizarTabela(
-      dadosFiltrados
-    );
-
+    sincronizarFiltrosTabela(dadosFiltrados);
+    atualizarTabela(dadosFiltrados, true);
 
     atualizarTextoPeriodo();
 
     atualizarTextoSetor();
 
   };
-
 
 /* =====================================================
    4. ASSINATURA DOS FILTROS
@@ -234,7 +201,6 @@ function gerarAssinaturaFiltros(
       ? getAvailableYears(dados)
       : [];
 
-
   const setores =
     typeof getUniqueValues ===
       "function"
@@ -243,7 +209,6 @@ function gerarAssinaturaFiltros(
           "setor"
         )
       : [];
-
 
   const vendedores =
     typeof getUniqueValues ===
@@ -254,7 +219,6 @@ function gerarAssinaturaFiltros(
         )
       : [];
 
-
   const representantes =
     typeof getUniqueValues ===
       "function"
@@ -264,7 +228,6 @@ function gerarAssinaturaFiltros(
         )
       : [];
 
-
   return JSON.stringify({
     anos,
     setores,
@@ -273,7 +236,6 @@ function gerarAssinaturaFiltros(
   });
 
 }
-
 
 /* =====================================================
    5. SINCRONIZA FILTROS DINÂMICOS
@@ -288,7 +250,6 @@ function sincronizarFiltrosDinamicos(
       dados
     );
 
-
   if (
     filtrosGerados &&
     novaAssinatura ===
@@ -297,24 +258,20 @@ function sincronizarFiltrosDinamicos(
     return;
   }
 
-
   const estadoAnterior =
     filtrosGerados
       ? capturarEstadoFiltros()
       : null;
-
 
   gerarFiltroPeriodo(
     dados,
     estadoAnterior
   );
 
-
   gerarFiltroSetores(
     dados,
     estadoAnterior
   );
-
 
   gerarFiltroSelect(
     filtroVendedor,
@@ -326,7 +283,6 @@ function sincronizarFiltrosDinamicos(
       : ""
   );
 
-
   gerarFiltroSelect(
     filtroRepresentante,
     dados,
@@ -337,14 +293,12 @@ function sincronizarFiltrosDinamicos(
       : ""
   );
 
-
   filtrosGerados = true;
 
   assinaturaFiltros =
     novaAssinatura;
 
 }
-
 
 /* =====================================================
    6. CAPTURA ESTADO DOS FILTROS
@@ -361,7 +315,6 @@ function capturarEstadoFiltros() {
       return cb.value;
     });
 
-
   const meses =
     Array.from(
       document.querySelectorAll(
@@ -370,7 +323,6 @@ function capturarEstadoFiltros() {
     ).map(function(cb) {
       return cb.value;
     });
-
 
   const setores =
     Array.from(
@@ -381,24 +333,20 @@ function capturarEstadoFiltros() {
       return cb.value;
     });
 
-
   const todosAnos =
     document.getElementById(
       "todosAnos"
     );
-
 
   const todosMeses =
     document.getElementById(
       "todosMeses"
     );
 
-
   const todosSetores =
     document.getElementById(
       "todosSetores"
     );
-
 
   return {
 
@@ -440,7 +388,6 @@ function capturarEstadoFiltros() {
 
 }
 
-
 /* =====================================================
    7. CRIA UMA LINHA DE CHECKBOX
    ===================================================== */
@@ -462,71 +409,57 @@ function criarCheckbox(
       "label"
     );
 
-
   label.className =
     destaque
       ? "filter-checkbox filter-checkbox-all"
       : "filter-checkbox";
-
 
   const input =
     document.createElement(
       "input"
     );
 
-
   input.type =
     "checkbox";
-
 
   if (id) {
     input.id = id;
   }
-
 
   if (classe) {
     input.className =
       classe;
   }
 
-
   input.value =
     valor;
 
-
   input.checked =
     checked;
-
 
   const span =
     document.createElement(
       "span"
     );
 
-
   span.textContent =
     texto;
-
 
   label.appendChild(
     input
   );
 
-
   label.appendChild(
     span
   );
-
 
   container.appendChild(
     label
   );
 
-
   return input;
 
 }
-
 
 /* =====================================================
    8. FILTRO DE PERÍODO
@@ -541,10 +474,8 @@ function gerarFiltroPeriodo(
     return;
   }
 
-
   periodMenu.innerHTML =
     "";
-
 
   const anos =
     typeof getAvailableYears ===
@@ -553,7 +484,6 @@ function gerarFiltroPeriodo(
           dados
         )
       : [];
-
 
   /* ===============================================
      ANOS
@@ -564,34 +494,27 @@ function gerarFiltroPeriodo(
       "div"
     );
 
-
   blocoAnos.className =
     "filter-menu-section";
-
 
   const tituloAnos =
     document.createElement(
       "div"
     );
 
-
   tituloAnos.className =
     "filter-menu-title";
 
-
   tituloAnos.textContent =
     "Anos";
-
 
   blocoAnos.appendChild(
     tituloAnos
   );
 
-
   const marcarTodosAnos =
     !estadoAnterior ||
     estadoAnterior.todosAnos;
-
 
   const todosAnos =
     criarCheckbox(
@@ -611,11 +534,9 @@ function gerarFiltroPeriodo(
       }
     );
 
-
   anos.forEach(function(ano) {
 
     let checked = true;
-
 
     if (estadoAnterior) {
 
@@ -626,7 +547,6 @@ function gerarFiltroPeriodo(
         );
 
     }
-
 
     const input =
       criarCheckbox(
@@ -646,7 +566,6 @@ function gerarFiltroPeriodo(
         }
       );
 
-
     input.addEventListener(
       "change",
       function() {
@@ -656,14 +575,12 @@ function gerarFiltroPeriodo(
           todosAnos
         );
 
-
         atualizarDashboard();
 
       }
     );
 
   });
-
 
   todosAnos.addEventListener(
     "change",
@@ -674,17 +591,14 @@ function gerarFiltroPeriodo(
         todosAnos.checked
       );
 
-
       atualizarDashboard();
 
     }
   );
 
-
   periodMenu.appendChild(
     blocoAnos
   );
-
 
   /* ===============================================
      MESES
@@ -695,34 +609,27 @@ function gerarFiltroPeriodo(
       "div"
     );
 
-
   blocoMeses.className =
     "filter-menu-section";
-
 
   const tituloMeses =
     document.createElement(
       "div"
     );
 
-
   tituloMeses.className =
     "filter-menu-title";
 
-
   tituloMeses.textContent =
     "Meses";
-
 
   blocoMeses.appendChild(
     tituloMeses
   );
 
-
   const marcarTodosMeses =
     !estadoAnterior ||
     estadoAnterior.todosMeses;
-
 
   const todosMeses =
     criarCheckbox(
@@ -742,23 +649,7 @@ function gerarFiltroPeriodo(
       }
     );
 
-
-  const meses =
-    window.MESES_ORDEM || [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-
+  const meses = window.MESES_ORDEM;
 
   meses.forEach(
     function(nome, index) {
@@ -766,9 +657,7 @@ function gerarFiltroPeriodo(
       const numeroMes =
         String(index + 1);
 
-
       let checked = true;
-
 
       if (estadoAnterior) {
 
@@ -779,7 +668,6 @@ function gerarFiltroPeriodo(
           );
 
       }
-
 
       const input =
         criarCheckbox(
@@ -799,7 +687,6 @@ function gerarFiltroPeriodo(
           }
         );
 
-
       input.addEventListener(
         "change",
         function() {
@@ -809,7 +696,6 @@ function gerarFiltroPeriodo(
             todosMeses
           );
 
-
           atualizarDashboard();
 
         }
@@ -817,7 +703,6 @@ function gerarFiltroPeriodo(
 
     }
   );
-
 
   todosMeses.addEventListener(
     "change",
@@ -828,19 +713,16 @@ function gerarFiltroPeriodo(
         todosMeses.checked
       );
 
-
       atualizarDashboard();
 
     }
   );
-
 
   periodMenu.appendChild(
     blocoMeses
   );
 
 }
-
 
 /* =====================================================
    9. FILTRO DE SETORES
@@ -855,10 +737,8 @@ function gerarFiltroSetores(
     return;
   }
 
-
   setorMenu.innerHTML =
     "";
-
 
   const setores =
     typeof getUniqueValues ===
@@ -869,11 +749,9 @@ function gerarFiltroSetores(
         )
       : [];
 
-
   const marcarTodos =
     !estadoAnterior ||
     estadoAnterior.todosSetores;
-
 
   const todosSetores =
     criarCheckbox(
@@ -893,23 +771,18 @@ function gerarFiltroSetores(
       }
     );
 
-
   setores.forEach(
     function(setor) {
 
       let checked = true;
 
-
       if (estadoAnterior) {
 
         checked =
           estadoAnterior.todosSetores ||
-          estadoAnterior.setores.includes(
-            setor
-          );
+          estadoAnterior.setores.some(valor => normalizeText(valor) === normalizeText(setor));
 
       }
-
 
       const input =
         criarCheckbox(
@@ -929,7 +802,6 @@ function gerarFiltroSetores(
           }
         );
 
-
       input.addEventListener(
         "change",
         function() {
@@ -938,7 +810,6 @@ function gerarFiltroSetores(
             ".filtro-setor-auto",
             todosSetores
           );
-
 
           atualizarTextoSetor();
 
@@ -950,7 +821,6 @@ function gerarFiltroSetores(
     }
   );
 
-
   todosSetores.addEventListener(
     "change",
     function() {
@@ -960,7 +830,6 @@ function gerarFiltroSetores(
         todosSetores.checked
       );
 
-
       atualizarTextoSetor();
 
       atualizarDashboard();
@@ -969,7 +838,6 @@ function gerarFiltroSetores(
   );
 
 }
-
 
 /* =====================================================
    10. FILTROS SELECT
@@ -987,7 +855,6 @@ function gerarFiltroSelect(
     return;
   }
 
-
   const valores =
     typeof getUniqueValues ===
       "function"
@@ -997,29 +864,23 @@ function gerarFiltroSelect(
         )
       : [];
 
-
   select.innerHTML =
     "";
-
 
   const opcaoTodos =
     document.createElement(
       "option"
     );
 
-
   opcaoTodos.value =
     "";
-
 
   opcaoTodos.textContent =
     textoTodos;
 
-
   select.appendChild(
     opcaoTodos
   );
-
 
   valores.forEach(
     function(valor) {
@@ -1029,14 +890,11 @@ function gerarFiltroSelect(
           "option"
         );
 
-
       option.value =
         valor;
 
-
       option.textContent =
         valor;
-
 
       select.appendChild(
         option
@@ -1045,26 +903,9 @@ function gerarFiltroSelect(
     }
   );
 
-
-  if (
-    valorAnterior &&
-    valores.includes(
-      valorAnterior
-    )
-  ) {
-
-    select.value =
-      valorAnterior;
-
-  } else {
-
-    select.value =
-      "";
-
-  }
+  select.value = valores.find(valor => normalizeText(valor) === normalizeText(valorAnterior)) || "";
 
 }
-
 
 /* =====================================================
    11. MARCA / DESMARCA CHECKBOXES
@@ -1090,7 +931,6 @@ function marcarCheckboxes(
 
 }
 
-
 /* =====================================================
    12. SINCRONIZA "TODOS"
    ===================================================== */
@@ -1104,14 +944,12 @@ function sincronizarCheckboxTodos(
     return;
   }
 
-
   const checkboxes =
     Array.from(
       document.querySelectorAll(
         seletor
       )
     );
-
 
   if (
     checkboxes.length === 0
@@ -1124,7 +962,6 @@ function sincronizarCheckboxTodos(
 
   }
 
-
   checkboxTodos.checked =
     checkboxes.every(
       function(cb) {
@@ -1134,79 +971,16 @@ function sincronizarCheckboxTodos(
 
 }
 
-
 /* =====================================================
    13. LÊ FILTROS ATIVOS
    ===================================================== */
 
 function lerFiltrosAtivos() {
-
-  const anos =
-    Array.from(
-      document.querySelectorAll(
-        ".filtro-ano-auto:checked"
-      )
-    ).map(
-      function(cb) {
-        return cb.value;
-      }
-    );
-
-
-  const meses =
-    Array.from(
-      document.querySelectorAll(
-        ".filtro-mes-auto:checked"
-      )
-    ).map(
-      function(cb) {
-        return cb.value;
-      }
-    );
-
-
-  const setores =
-    Array.from(
-      document.querySelectorAll(
-        ".filtro-setor-auto:checked"
-      )
-    ).map(
-      function(cb) {
-        return cb.value;
-      }
-    );
-
-
   return {
-
-    anos:
-      anos,
-
-    meses:
-      meses,
-
-    setores:
-      setores,
-
-    vendedor:
-      filtroVendedor
-        ? filtroVendedor.value
-        : "",
-
-    representante:
-      filtroRepresentante
-        ? filtroRepresentante.value
-        : "",
-
-    cliente:
-      filtroCliente
-        ? filtroCliente.value.trim()
-        : ""
-
+    ...capturarEstadoFiltros(),
+    cliente: filtroCliente ? filtroCliente.value.trim() : ""
   };
-
 }
-
 
 /* =====================================================
    14. APLICA FILTROS
@@ -1215,78 +989,24 @@ function lerFiltrosAtivos() {
    aqui "nenhum checkbox marcado" significa SEM DADOS.
    ===================================================== */
 
-function aplicarFiltrosDashboard(
-  dados,
-  filtros
-) {
-
-  if (
-    !Array.isArray(dados) ||
-    dados.length === 0
-  ) {
-    return [];
-  }
-
-
-  const totalAnos =
-    document.querySelectorAll(
-      ".filtro-ano-auto"
-    ).length;
-
-
-  const totalMeses =
-    document.querySelectorAll(
-      ".filtro-mes-auto"
-    ).length;
-
-
-  const totalSetores =
-    document.querySelectorAll(
-      ".filtro-setor-auto"
-    ).length;
-
-
-  if (
-    totalAnos > 0 &&
-    filtros.anos.length === 0
-  ) {
-    return [];
-  }
-
-
-  if (
-    totalMeses > 0 &&
-    filtros.meses.length === 0
-  ) {
-    return [];
-  }
-
-
-  if (
-    totalSetores > 0 &&
-    filtros.setores.length === 0
-  ) {
-    return [];
-  }
-
-
-  if (
-    typeof filtrarDados ===
-    "function"
-  ) {
-
-    return filtrarDados(
-      dados,
-      filtros
-    );
-
-  }
-
-
-  return dados;
-
+function aplicarFiltrosDashboard(dados, filtros) {
+  if (!Array.isArray(dados)) return [];
+  const grupos = [
+    [".filtro-ano-auto", "anos", "todosAnos"],
+    [".filtro-mes-auto", "meses", "todosMeses"],
+    [".filtro-setor-auto", "setores", "todosSetores"]
+  ];
+  if (grupos.some(([seletor, chave, todos]) =>
+    !filtros[todos] && document.querySelectorAll(seletor).length > 0 && !filtros[chave].length
+  )) return [];
+  // Todos inclui também registros sem data/setor, evitando totais incompletos.
+  return filtrarDados(dados, {
+    ...filtros,
+    anos: filtros.todosAnos ? [] : filtros.anos,
+    meses: filtros.todosMeses ? [] : filtros.meses,
+    setores: filtros.todosSetores ? [] : filtros.setores
+  });
 }
-
 
 /* =====================================================
    15. ATUALIZA UM ELEMENTO
@@ -1302,7 +1022,6 @@ function setTexto(
       id
     );
 
-
   if (elemento) {
 
     elemento.textContent =
@@ -1311,7 +1030,6 @@ function setTexto(
   }
 
 }
-
 
 /* =====================================================
    16. KPIs
@@ -1329,7 +1047,6 @@ function atualizarKPIs(
         )
       : null;
 
-
   if (!resumo) {
 
     limparKPIs();
@@ -1337,7 +1054,6 @@ function atualizarKPIs(
     return;
 
   }
-
 
   /* ===============================================
      VISÃO GERAL
@@ -1348,12 +1064,10 @@ function atualizarKPIs(
     resumo.totalReclamacoes
   );
 
-
   setTexto(
     "clientesAtingidos",
     resumo.clientesAfetados
   );
-
 
   setTexto(
     "topErroQtd",
@@ -1365,7 +1079,6 @@ function atualizarKPIs(
       : "-"
   );
 
-
   setTexto(
     "setorTop",
     resumo.setorTop.qtd > 0
@@ -1376,7 +1089,6 @@ function atualizarKPIs(
       : "-"
   );
 
-
   /* ===============================================
      SETORES
      =============================================== */
@@ -1386,14 +1098,12 @@ function atualizarKPIs(
     resumo.totalSetores
   );
 
-
   setTexto(
     "setorTopCard",
     resumo.setorTop.qtd > 0
       ? resumo.setorTop.nome
       : "-"
   );
-
 
   setTexto(
     "setorParticipacao",
@@ -1407,7 +1117,6 @@ function atualizarKPIs(
           .toFixed(1) + "%"
   );
 
-
   /* ===============================================
      CLIENTES
      =============================================== */
@@ -1419,18 +1128,15 @@ function atualizarKPIs(
       : "-"
   );
 
-
   setTexto(
     "topClienteQtd",
     resumo.clienteTop.qtd
   );
 
-
   setTexto(
     "totalClientes",
     resumo.totalClientes
   );
-
 
   /* ===============================================
      EVOLUÇÃO
@@ -1440,7 +1146,6 @@ function atualizarKPIs(
     "totalPeriodo",
     resumo.totalReclamacoes
   );
-
 
   setTexto(
     "mediaMensal",
@@ -1454,17 +1159,13 @@ function atualizarKPIs(
           .toFixed(1)
   );
 
-
-  const variacao =
-    Number(
-      resumo.variacaoMensal
-    ) || 0;
-
+  const variacao = resumo.variacaoMensal;
 
   let textoVariacao;
 
-
-  if (variacao > 0) {
+  if (variacao === null) {
+    textoVariacao = "Sem base";
+  } else if (variacao > 0) {
 
     textoVariacao =
       "+" +
@@ -1489,12 +1190,10 @@ function atualizarKPIs(
 
   }
 
-
   setTexto(
     "variacaoMensal",
     textoVariacao
   );
-
 
 }
 /* =====================================================
@@ -1570,7 +1269,6 @@ function limparKPIs() {
 
 }
 
-
 /* =====================================================
    18. GRÁFICOS
    ===================================================== */
@@ -1591,7 +1289,6 @@ function atualizarGraficos(
 
   }
 
-
   if (
     typeof renderChartClientes ===
     "function"
@@ -1604,7 +1301,6 @@ function atualizarGraficos(
 
   }
 
-
   if (
     typeof renderChartEvolucao ===
     "function"
@@ -1616,7 +1312,6 @@ function atualizarGraficos(
         filtros
       );
 
-
     renderChartEvolucao(
       dados,
       serie.labels,
@@ -1626,7 +1321,6 @@ function atualizarGraficos(
   }
 
 }
-
 
 /* =====================================================
    19. SÉRIE CRONOLÓGICA DA EVOLUÇÃO
@@ -1640,21 +1334,7 @@ function gerarSerieEvolucao(
   filtros
 ) {
 
-  const mesesAbreviados = [
-    "Jan",
-    "Fev",
-    "Mar",
-    "Abr",
-    "Mai",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Set",
-    "Out",
-    "Nov",
-    "Dez"
-  ];
-
+  const mesesAbreviados = MESES_ABREVIADOS;
 
   const anos =
     filtros.anos
@@ -1671,7 +1351,6 @@ function gerarSerieEvolucao(
           return a - b;
         }
       );
-
 
   const meses =
     filtros.meses
@@ -1690,9 +1369,7 @@ function gerarSerieEvolucao(
         }
       );
 
-
   const contagem = {};
-
 
   dados.forEach(
     function(item) {
@@ -1704,7 +1381,6 @@ function gerarSerieEvolucao(
         return;
       }
 
-
       const chave =
         item.ano +
         "-" +
@@ -1715,18 +1391,15 @@ function gerarSerieEvolucao(
           "0"
         );
 
-
       contagem[chave] =
         (contagem[chave] || 0) + 1;
 
     }
   );
 
-
   const labels = [];
 
   const valores = [];
-
 
   anos.forEach(
     function(ano) {
@@ -1743,9 +1416,7 @@ function gerarSerieEvolucao(
                 "0"
               );
 
-
           let label;
-
 
           if (
             anos.length === 1
@@ -1767,11 +1438,9 @@ function gerarSerieEvolucao(
 
           }
 
-
           labels.push(
             label
           );
-
 
           valores.push(
             contagem[chave] || 0
@@ -1783,14 +1452,12 @@ function gerarSerieEvolucao(
     }
   );
 
-
   return {
     labels,
     valores
   };
 
 }
-
 
 /* =====================================================
    20. TOP 5 ERROS
@@ -1805,15 +1472,12 @@ function atualizarRankingErros(
       "rankingErros"
     );
 
-
   if (!container) {
     return;
   }
 
-
   container.innerHTML =
     "";
-
 
   if (
     !Array.isArray(dados) ||
@@ -1825,24 +1489,19 @@ function atualizarRankingErros(
         "p"
       );
 
-
     vazio.className =
       "ranking-empty";
 
-
     vazio.textContent =
       "Sem dados para os filtros selecionados.";
-
 
     container.appendChild(
       vazio
     );
 
-
     return;
 
   }
-
 
   const ranking =
     typeof getRanking ===
@@ -1854,7 +1513,6 @@ function atualizarRankingErros(
         )
       : [];
 
-
   if (
     ranking.length === 0
   ) {
@@ -1864,28 +1522,22 @@ function atualizarRankingErros(
         "p"
       );
 
-
     vazio.className =
       "ranking-empty";
 
-
     vazio.textContent =
       "Nenhum erro informado.";
-
 
     container.appendChild(
       vazio
     );
 
-
     return;
 
   }
 
-
   const total =
     dados.length;
-
 
   ranking.forEach(
     function(item) {
@@ -1898,16 +1550,13 @@ function atualizarRankingErros(
             ) * 100
           : 0;
 
-
       const div =
         document.createElement(
           "div"
         );
 
-
       div.className =
         "ranking-item";
-
 
       /* POSIÇÃO */
 
@@ -1916,14 +1565,11 @@ function atualizarRankingErros(
           "div"
         );
 
-
       posicao.className =
         "ranking-pos";
 
-
       posicao.textContent =
         item.posicao + "º";
-
 
       /* INFORMAÇÕES */
 
@@ -1932,44 +1578,35 @@ function atualizarRankingErros(
           "div"
         );
 
-
       info.className =
         "ranking-info";
-
 
       const nome =
         document.createElement(
           "div"
         );
 
-
       nome.className =
         "ranking-nome";
 
-
       nome.textContent =
         item.nome;
-
 
       const barra =
         document.createElement(
           "div"
         );
 
-
       barra.className =
         "ranking-bar";
-
 
       const preenchimento =
         document.createElement(
           "div"
         );
 
-
       preenchimento.className =
         "ranking-fill";
-
 
       preenchimento.style.width =
         Math.min(
@@ -1977,21 +1614,17 @@ function atualizarRankingErros(
           100
         ) + "%";
 
-
       barra.appendChild(
         preenchimento
       );
-
 
       info.appendChild(
         nome
       );
 
-
       info.appendChild(
         barra
       );
-
 
       /* QUANTIDADE */
 
@@ -2000,26 +1633,21 @@ function atualizarRankingErros(
           "div"
         );
 
-
       quantidade.className =
         "ranking-qtd";
-
 
       const numero =
         document.createElement(
           "strong"
         );
 
-
       numero.textContent =
         item.qtd;
-
 
       const percentualSpan =
         document.createElement(
           "span"
         );
-
 
       percentualSpan.textContent =
         percentual.toLocaleString(
@@ -2033,16 +1661,13 @@ function atualizarRankingErros(
           }
         ) + "%";
 
-
       quantidade.appendChild(
         numero
       );
 
-
       quantidade.appendChild(
         percentualSpan
       );
-
 
       /* MONTA */
 
@@ -2050,16 +1675,13 @@ function atualizarRankingErros(
         posicao
       );
 
-
       div.appendChild(
         info
       );
 
-
       div.appendChild(
         quantidade
       );
-
 
       container.appendChild(
         div
@@ -2070,206 +1692,68 @@ function atualizarRankingErros(
 
 }
 
-
 /* =====================================================
    21. TABELA DE ÚLTIMAS RECLAMAÇÕES
    ===================================================== */
 
-function atualizarTabela(
-  dados
-) {
+function atualizarTabela(dados, resetarPagina = false) {
+  if (!tabelaBody) return;
+  if (resetarPagina) estadoTabela.pagina = 1;
+  const inicio = document.getElementById("tabelaDataInicio").value;
+  const fim = document.getElementById("tabelaDataFim").value;
+  const intervaloInvalido = Boolean(inicio && fim && inicio > fim);
+  const aviso = document.getElementById("tabelaFiltroAviso");
+  aviso.hidden = !intervaloInvalido;
+  aviso.textContent = intervaloInvalido ? "A data inicial deve ser anterior ou igual à data final." : "";
 
-  if (!tabelaBody) {
-    return;
+  const filtrados = intervaloInvalido ? [] : filtrarTabelaReclamacoes(dados, {
+    termo: buscaTabela?.value || "",
+    setor: document.getElementById("tabelaFiltroSetor").value,
+    erro: document.getElementById("tabelaFiltroErro").value,
+    inicio, fim
+  });
+  const resultado = ordenarReclamacoes(filtrados, estadoTabela.coluna, estadoTabela.direcao);
+  const paginas = Math.max(1, Math.ceil(resultado.length / estadoTabela.tamanho));
+  estadoTabela.pagina = Math.min(estadoTabela.pagina, paginas);
+  const primeiro = (estadoTabela.pagina - 1) * estadoTabela.tamanho;
+  const visiveis = resultado.slice(primeiro, primeiro + estadoTabela.tamanho);
+  tabelaBody.replaceChildren();
+  const fragmento = document.createDocumentFragment();
+
+  if (!visiveis.length) {
+    const tr = document.createElement("tr");
+    tr.className = "empty-row";
+    adicionarCelula(tr, intervaloInvalido
+      ? "Ajuste o intervalo de datas para consultar as reclamações."
+      : "Nenhuma reclamação encontrada para os filtros selecionados.");
+    tr.firstElementChild.colSpan = 8;
+    fragmento.appendChild(tr);
   }
+  visiveis.forEach(function(item) {
+    const tr = document.createElement("tr");
+    adicionarCelula(tr, item.rrc || "-");
+    adicionarCelula(tr, formatDateBR(getDataReclamacao(item)));
+    adicionarCelula(tr, item.cliente || "-", 45);
+    adicionarCelula(tr, item.produto || "-", 65);
+    adicionarCelula(tr, item.setor || "-", 35);
+    adicionarCelula(tr, item.erro || "-", 65);
+    adicionarCelula(tr, getResponsavelComercial(item), 40);
+    adicionarCelula(tr, item.nf || "-");
+    fragmento.appendChild(tr);
+  });
+  tabelaBody.appendChild(fragmento);
 
-
-  let resultado =
-    Array.isArray(dados)
-      ? dados
-      : [];
-
-
-  const termo =
-    buscaTabela
-      ? buscaTabela.value.trim()
-      : "";
-
-
-  if (
-    termo &&
-    typeof buscarNasReclamacoes ===
-      "function"
-  ) {
-
-    resultado =
-      buscarNasReclamacoes(
-        resultado,
-        termo
-      );
-
-  }
-
-
- /* =====================================================
-   ORDENA PELO Nº DA RRC
-   Maior número aparece primeiro
-   ===================================================== */
-
-resultado.sort(function(a, b) {
-
-  const rrcA =
-    Number(a.rrc) || 0;
-
-  const rrcB =
-    Number(b.rrc) || 0;
-
-  return rrcB - rrcA;
-
-});
-
-
-  /* Mostra as 25 últimas RRCs */
-
-  resultado =
-    resultado.slice(
-      0,
-      25
-    );
-
-
-  tabelaBody.innerHTML =
-    "";
-
-
-  if (
-    resultado.length === 0
-  ) {
-
-    const tr =
-      document.createElement(
-        "tr"
-      );
-
-
-    tr.className =
-      "empty-row";
-
-
-    const td =
-      document.createElement(
-        "td"
-      );
-
-
-    td.colSpan =
-      8;
-
-
-    td.textContent =
-      "Nenhuma reclamação encontrada.";
-
-
-    tr.appendChild(
-      td
-    );
-
-
-    tabelaBody.appendChild(
-      tr
-    );
-
-
-    return;
-
-  }
-
-
-  resultado.forEach(
-    function(item) {
-
-      const tr =
-        document.createElement(
-          "tr"
-        );
-
-
-      adicionarCelula(
-        tr,
-        item.rrc || "-"
-      );
-
-
-      adicionarCelula(
-        tr,
-        typeof formatDateBR ===
-          "function"
-          ? formatDateBR(
-              item.dataOcorrencia ||
-              item.dataOcorrenciaTexto
-            )
-          : item.dataOcorrenciaTexto ||
-            "-"
-      );
-
-
-      adicionarCelula(
-        tr,
-        item.cliente || "-",
-        45
-      );
-
-
-      adicionarCelula(
-        tr,
-        item.produto || "-",
-        65
-      );
-
-
-      adicionarCelula(
-        tr,
-        item.setor || "-",
-        35
-      );
-
-
-      adicionarCelula(
-        tr,
-        item.erro || "-",
-        65
-      );
-
-
-      const responsavel =
-        item.vendedor ||
-        item.representante ||
-        item.responsavelComercial ||
-        "-";
-
-
-      adicionarCelula(
-        tr,
-        responsavel,
-        40
-      );
-
-
-      adicionarCelula(
-        tr,
-        item.nf || "-"
-      );
-
-
-      tabelaBody.appendChild(
-        tr
-      );
-
-    }
-  );
-
+  const total = resultado.length;
+  document.getElementById("tabelaResumo").textContent =
+    (total ? (primeiro + 1) + "–" + (primeiro + visiveis.length) : "0") +
+    " de " + formatNumber(total) + " reclamações · " +
+    formatNumber(Array.isArray(dados) ? dados.length : 0) + " no dashboard";
+  document.getElementById("tabelaPagina").textContent =
+    "Página " + estadoTabela.pagina + " de " + paginas;
+  document.getElementById("tabelaAnterior").disabled = estadoTabela.pagina <= 1;
+  document.getElementById("tabelaProxima").disabled = estadoTabela.pagina >= paginas;
+  atualizarCabecalhosTabela();
 }
-
 
 /* =====================================================
    22. CRIA CÉLULA DA TABELA
@@ -2286,7 +1770,6 @@ function adicionarCelula(
       "td"
     );
 
-
   const texto =
     String(
       valor === null ||
@@ -2294,7 +1777,6 @@ function adicionarCelula(
         ? ""
         : valor
     );
-
 
   if (
     limite > 0 &&
@@ -2307,7 +1789,6 @@ function adicionarCelula(
         limite
       ) + "…";
 
-
     td.title =
       texto;
 
@@ -2318,13 +1799,11 @@ function adicionarCelula(
 
   }
 
-
   tr.appendChild(
     td
   );
 
 }
-
 
 /* =====================================================
    23. TEXTO DO FILTRO DE PERÍODO
@@ -2336,29 +1815,24 @@ function atualizarTextoPeriodo() {
     return;
   }
 
-
   const filtros =
     lerFiltrosAtivos();
-
 
   const totalAnos =
     document.querySelectorAll(
       ".filtro-ano-auto"
     ).length;
 
-
   const totalMeses =
     document.querySelectorAll(
       ".filtro-mes-auto"
     ).length;
-
 
   /* ===============================================
      ANOS
      =============================================== */
 
   let textoAno;
-
 
   if (
     filtros.anos.length === 0
@@ -2392,30 +1866,13 @@ function atualizarTextoPeriodo() {
 
   }
 
-
   /* ===============================================
      MESES
      =============================================== */
 
-  const meses =
-    window.MESES_ORDEM || [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-
+  const meses = window.MESES_ORDEM;
 
   let textoMes;
-
 
   if (
     filtros.meses.length === 0
@@ -2470,7 +1927,6 @@ function atualizarTextoPeriodo() {
 
   }
 
-
   if (
     filtros.anos.length ===
       totalAnos &&
@@ -2492,7 +1948,6 @@ function atualizarTextoPeriodo() {
 
 }
 
-
 /* =====================================================
    24. TEXTO DO FILTRO DE SETOR
    ===================================================== */
@@ -2502,7 +1957,6 @@ function atualizarTextoSetor() {
   if (!setorSelectedText) {
     return;
   }
-
 
   const setores =
     Array.from(
@@ -2515,15 +1969,12 @@ function atualizarTextoSetor() {
       }
     );
 
-
   const totalSetores =
     document.querySelectorAll(
       ".filtro-setor-auto"
     ).length;
 
-
   let texto;
-
 
   if (
     setores.length === 0
@@ -2557,18 +2008,18 @@ function atualizarTextoSetor() {
 
   }
 
-
   setorSelectedText.textContent =
     texto;
 
 }
-
 
 /* =====================================================
    25. RESET DOS FILTROS
    ===================================================== */
 
 function resetarFiltros() {
+  clearTimeout(timerBuscaCliente);
+  limparFiltrosTabela(false);
 
   /* ANOS */
 
@@ -2577,18 +2028,15 @@ function resetarFiltros() {
     true
   );
 
-
   const todosAnos =
     document.getElementById(
       "todosAnos"
     );
 
-
   if (todosAnos) {
     todosAnos.checked =
       true;
   }
-
 
   /* MESES */
 
@@ -2597,18 +2045,15 @@ function resetarFiltros() {
     true
   );
 
-
   const todosMeses =
     document.getElementById(
       "todosMeses"
     );
 
-
   if (todosMeses) {
     todosMeses.checked =
       true;
   }
-
 
   /* SETORES */
 
@@ -2617,18 +2062,15 @@ function resetarFiltros() {
     true
   );
 
-
   const todosSetores =
     document.getElementById(
       "todosSetores"
     );
 
-
   if (todosSetores) {
     todosSetores.checked =
       true;
   }
-
 
   /* VENDEDOR */
 
@@ -2639,7 +2081,6 @@ function resetarFiltros() {
 
   }
 
-
   /* REPRESENTANTE */
 
   if (filtroRepresentante) {
@@ -2648,7 +2089,6 @@ function resetarFiltros() {
       "";
 
   }
-
 
   /* CLIENTE */
 
@@ -2659,7 +2099,6 @@ function resetarFiltros() {
 
   }
 
-
   /* BUSCA TABELA */
 
   if (buscaTabela) {
@@ -2669,7 +2108,6 @@ function resetarFiltros() {
 
   }
 
-
   atualizarTextoPeriodo();
 
   atualizarTextoSetor();
@@ -2677,7 +2115,6 @@ function resetarFiltros() {
   atualizarDashboard();
 
 }
-
 
 /* =====================================================
    26. ABRIR / FECHAR DROPDOWN
@@ -2696,15 +2133,12 @@ function abrirFecharDropdown(
     return;
   }
 
-
   const aberto =
     dropdown.classList.contains(
       "open"
     );
 
-
   fecharDropdowns();
-
 
   if (!aberto) {
 
@@ -2712,10 +2146,8 @@ function abrirFecharDropdown(
       "open"
     );
 
-
     menu.style.display =
       "block";
-
 
     if (botao) {
 
@@ -2729,7 +2161,6 @@ function abrirFecharDropdown(
   }
 
 }
-
 
 /* =====================================================
    27. FECHAR DROPDOWNS
@@ -2746,10 +2177,8 @@ function fecharDropdowns() {
       "open"
     );
 
-
     periodMenu.style.display =
       "none";
-
 
     if (periodSelected) {
 
@@ -2762,7 +2191,6 @@ function fecharDropdowns() {
 
   }
 
-
   if (
     setorDropdown &&
     setorMenu
@@ -2772,10 +2200,8 @@ function fecharDropdowns() {
       "open"
     );
 
-
     setorMenu.style.display =
       "none";
-
 
     if (setorSelected) {
 
@@ -2789,7 +2215,6 @@ function fecharDropdowns() {
   }
 
 }
-
 
 /* =====================================================
    28. EVENTOS GERAIS
@@ -2813,7 +2238,6 @@ function configurarEventosDashboard() {
 
         event.stopPropagation();
 
-
         abrirFecharDropdown(
           periodDropdown,
           periodMenu,
@@ -2822,7 +2246,6 @@ function configurarEventosDashboard() {
 
       }
     );
-
 
     periodMenu.addEventListener(
       "click",
@@ -2834,7 +2257,6 @@ function configurarEventosDashboard() {
     );
 
   }
-
 
   /* ===============================================
      SETOR
@@ -2852,7 +2274,6 @@ function configurarEventosDashboard() {
 
         event.stopPropagation();
 
-
         abrirFecharDropdown(
           setorDropdown,
           setorMenu,
@@ -2861,7 +2282,6 @@ function configurarEventosDashboard() {
 
       }
     );
-
 
     setorMenu.addEventListener(
       "click",
@@ -2874,6 +2294,9 @@ function configurarEventosDashboard() {
 
   }
 
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") fecharDropdowns();
+  });
 
   /* ===============================================
      FECHA AO CLICAR FORA
@@ -2887,7 +2310,6 @@ function configurarEventosDashboard() {
 
     }
   );
-
 
   /* ===============================================
      VENDEDOR
@@ -2906,7 +2328,6 @@ function configurarEventosDashboard() {
 
   }
 
-
   /* ===============================================
      REPRESENTANTE
      =============================================== */
@@ -2923,7 +2344,6 @@ function configurarEventosDashboard() {
     );
 
   }
-
 
   /* ===============================================
      CLIENTE
@@ -2942,7 +2362,6 @@ function configurarEventosDashboard() {
           timerBuscaCliente
         );
 
-
         timerBuscaCliente =
           setTimeout(
             function() {
@@ -2958,7 +2377,6 @@ function configurarEventosDashboard() {
 
   }
 
-
   /* ===============================================
      BUSCA DA TABELA
      =============================================== */
@@ -2973,14 +2391,11 @@ function configurarEventosDashboard() {
           timerBuscaTabela
         );
 
-
         timerBuscaTabela =
           setTimeout(
             function() {
 
-              atualizarTabela(
-                dadosFiltradosAtuais
-              );
+              atualizarTabela(dadosFiltradosAtuais, true);
 
             },
             180
@@ -2990,7 +2405,6 @@ function configurarEventosDashboard() {
     );
 
   }
-
 
   /* ===============================================
      RESET
@@ -3011,7 +2425,6 @@ function configurarEventosDashboard() {
 
 }
 
-
 /* =====================================================
    29. INICIALIZAÇÃO
    ===================================================== */
@@ -3021,10 +2434,9 @@ document.addEventListener(
   function() {
 
     configurarEventosDashboard();
-
+    configurarEventosTabela();
 
     fecharDropdowns();
-
 
     /*
       Normalmente o data.js chama atualizarDashboard()
@@ -3047,3 +2459,69 @@ document.addEventListener(
 
   }
 );
+
+/* Filtros locais não alteram os KPIs nem os gráficos. */
+function sincronizarFiltrosTabela(dados) {
+  const assinatura = JSON.stringify([
+    getUniqueValues(dados, "setor"), getUniqueValues(dados, "erro")
+  ]);
+  if (assinatura === assinaturaFiltrosTabela) return;
+  [
+    ["tabelaFiltroSetor", "setor", "Todos os setores"],
+    ["tabelaFiltroErro", "erro", "Todos os erros"]
+  ].forEach(function([id, chave, rotulo]) {
+    const select = document.getElementById(id);
+    gerarFiltroSelect(select, dados, chave, rotulo, select.value);
+  });
+  assinaturaFiltrosTabela = assinatura;
+}
+
+function atualizarCabecalhosTabela() {
+  document.querySelectorAll(".table-sort").forEach(function(botao) {
+    const ativo = botao.dataset.sort === estadoTabela.coluna;
+    const crescente = estadoTabela.direcao === "asc";
+    botao.closest("th").setAttribute("aria-sort",
+      ativo ? (crescente ? "ascending" : "descending") : "none");
+    botao.querySelector(".sort-arrow").textContent = ativo ? (crescente ? "↑" : "↓") : "↕";
+    const nome = botao.firstChild.textContent.trim();
+    botao.setAttribute("aria-label", "Ordenar por " + nome +
+      (ativo && crescente ? " em ordem decrescente" : " em ordem crescente"));
+  });
+}
+
+function limparFiltrosTabela(atualizar = true) {
+  clearTimeout(timerBuscaTabela);
+  ["buscaTabela", "tabelaFiltroSetor", "tabelaFiltroErro", "tabelaDataInicio", "tabelaDataFim"]
+    .forEach(id => { document.getElementById(id).value = ""; });
+  estadoTabela.pagina = 1;
+  if (atualizar) atualizarTabela(dadosFiltradosAtuais, true);
+}
+
+function configurarEventosTabela() {
+  document.querySelectorAll(".table-sort").forEach(function(botao) {
+    botao.addEventListener("click", function() {
+      const coluna = botao.dataset.sort;
+      estadoTabela.direcao = estadoTabela.coluna === coluna && estadoTabela.direcao === "asc"
+        ? "desc" : "asc";
+      estadoTabela.coluna = coluna;
+      atualizarTabela(dadosFiltradosAtuais, true);
+    });
+  });
+  ["tabelaFiltroSetor", "tabelaFiltroErro", "tabelaDataInicio", "tabelaDataFim"]
+    .forEach(id => document.getElementById(id).addEventListener("change",
+      () => atualizarTabela(dadosFiltradosAtuais, true)));
+  document.getElementById("btnLimparTabela").addEventListener("click", () => limparFiltrosTabela());
+  document.getElementById("tabelaPorPagina").addEventListener("change", function(event) {
+    estadoTabela.tamanho = Number(event.target.value);
+    atualizarTabela(dadosFiltradosAtuais, true);
+  });
+  document.getElementById("tabelaAnterior").addEventListener("click", function() {
+    estadoTabela.pagina = Math.max(1, estadoTabela.pagina - 1);
+    atualizarTabela(dadosFiltradosAtuais);
+  });
+  document.getElementById("tabelaProxima").addEventListener("click", function() {
+    estadoTabela.pagina++;
+    atualizarTabela(dadosFiltradosAtuais);
+  });
+  atualizarCabecalhosTabela();
+}

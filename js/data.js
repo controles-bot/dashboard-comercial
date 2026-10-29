@@ -1,1253 +1,247 @@
-console.log("data.js carregado - Dashboard RRC");
-
+/* Leitura e normalização da planilha pública de reclamações. */
 const CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQB0h9o41ixlA5A79GS6gJk56ubMd_wfvOkYgC0ttKPmddmgNuSa9F_NDK2KIqnUrnHPdiatYyVyxyO/pub?gid=1931971393&single=true&output=csv";
 
 const MESES_ORDEM = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro"
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
+window.MESES_ORDEM = MESES_ORDEM;
 
-/* =====================================================
-   1. NORMALIZA CABEÇALHO
-   ===================================================== */
+let carregamentoEmAndamento = false;
+let ultimaAtualizacaoDados = null;
 
 function normalizarCabecalho(valor) {
-  return String(valor || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeText(valor).replace(/^\uFEFF/, "");
 }
 
+/* Mantém separadores, aspas escapadas e quebras de linha dentro dos campos. */
+function parseCSV(csv, separador) {
+  const linhas = [];
+  let linha = [];
+  let campo = "";
+  let entreAspas = false;
+  const texto = String(csv).replace(/^\uFEFF/, "");
 
-/* =====================================================
-   2. CSV ROBUSTO
-   ===================================================== */
-
-function parseCSVLine(line, sep) {
-  const result = [];
-
-  let current = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-
-    if (char === '"') {
-
-      // Aspa dupla dentro de campo com aspas
-      if (
-        insideQuotes &&
-        line[i + 1] === '"'
-      ) {
-        current += '"';
+  for (let i = 0; i < texto.length; i++) {
+    const caractere = texto[i];
+    if (caractere === '"') {
+      if (entreAspas && texto[i + 1] === '"') {
+        campo += '"';
         i++;
-        continue;
+      } else {
+        entreAspas = !entreAspas;
       }
-
-      insideQuotes = !insideQuotes;
-      continue;
-    }
-
-    if (
-      char === sep &&
-      !insideQuotes
-    ) {
-      result.push(current);
-      current = "";
+    } else if (caractere === separador && !entreAspas) {
+      linha.push(campo);
+      campo = "";
+    } else if ((caractere === "\n" || caractere === "\r") && !entreAspas) {
+      linha.push(campo);
+      if (linha.some(valor => valor.trim() !== "")) linhas.push(linha);
+      linha = [];
+      campo = "";
+      if (caractere === "\r" && texto[i + 1] === "\n") i++;
     } else {
-      current += char;
+      campo += caractere;
     }
   }
 
-  result.push(current);
-
-  return result;
+  if (entreAspas) throw new Error("O CSV contém um campo com aspas não fechadas.");
+  linha.push(campo);
+  if (linha.some(valor => valor.trim() !== "")) linhas.push(linha);
+  return linhas;
 }
-
-
-/* =====================================================
-   3. CSV PARA JSON
-   ===================================================== */
 
 function csvToJson(csv) {
-  if (!csv || !String(csv).trim()) {
-    return [];
-  }
-
-  const linhas = String(csv)
-    .replace(/\r/g, "")
-    .split("\n")
-    .filter(function(linha) {
-      return linha.trim() !== "";
-    });
-
-
-  if (linhas.length === 0) {
-    return [];
-  }
-
-
-  const primeiraLinha =
-    linhas[0];
-
-
-  const sep =
-    primeiraLinha.includes(";")
-      ? ";"
-      : ",";
-
-
-  const headers =
-    parseCSVLine(
-      primeiraLinha,
-      sep
-    ).map(function(header) {
-      return normalizarCabecalho(header);
-    });
-
-
-  console.log(
-    "Headers detectados:",
-    headers
+  if (!String(csv ?? "").trim()) return [];
+  // O cabeçalho publicado pelo Sheets não contém quebras de linha.
+  const primeiraLinha = String(csv).split(/\r?\n/, 1)[0];
+  const separador = [",", ";", "\t"].reduce((melhor, candidato) =>
+    parseCSV(primeiraLinha, candidato)[0].length >
+    parseCSV(primeiraLinha, melhor)[0].length ? candidato : melhor
   );
-
-
-  return linhas
-    .slice(1)
-    .map(function(linha) {
-
-      const cols =
-        parseCSVLine(
-          linha,
-          sep
-        );
-
-
-      const obj = {};
-
-
-      headers.forEach(
-        function(header, index) {
-
-          obj[header] =
-            cols[index] !== undefined
-              ? String(cols[index]).trim()
-              : "";
-
-        }
-      );
-
-
-      return obj;
-    });
+  const [cabecalho, ...linhas] = parseCSV(csv, separador);
+  if (!cabecalho) return [];
+  const headers = cabecalho.map(normalizarCabecalho);
+  const preenchidos = headers.filter(Boolean);
+  if (new Set(preenchidos).size !== preenchidos.length) {
+    throw new Error("O CSV contém cabeçalhos duplicados.");
+  }
+  if (!headers.some(header => ["nº rrc", "n° rrc", "numero rrc", "rrc", "cliente"].includes(header))) {
+    throw new Error("A resposta recebida não contém as colunas de reclamações.");
+  }
+  return linhas.map(colunas => {
+    if (colunas.length !== headers.length) {
+      throw new Error("O CSV contém uma linha com quantidade de colunas inválida.");
+    }
+    return Object.fromEntries(headers.flatMap((header, index) =>
+      header ? [[header, colunas[index].trim()]] : []
+    ));
+  });
 }
 
-
-/* =====================================================
-   4. BUSCA CAMPO PELO CABEÇALHO
-   ===================================================== */
-
-function obterCampo(
-  registro,
-  nomesPossiveis
-) {
-  for (
-    let i = 0;
-    i < nomesPossiveis.length;
-    i++
-  ) {
-
-    const chave =
-      normalizarCabecalho(
-        nomesPossiveis[i]
-      );
-
-
-    if (
-      registro[chave] !== undefined &&
-      registro[chave] !== null
-    ) {
-      return String(
-        registro[chave]
-      ).trim();
-    }
+function obterCampo(registro, nomesPossiveis) {
+  for (const nome of nomesPossiveis) {
+    const valor = String(registro[normalizarCabecalho(nome)] ?? "").trim();
+    if (valor) return valor;
   }
-
   return "";
 }
 
-
-/* =====================================================
-   5. DATA FLEXÍVEL
-   ===================================================== */
-
 function extrairDataInfo(valor) {
+  const vazio = { data: null, dia: null, mesNum: null, mes: null, ano: null, timestamp: 0 };
+  const texto = String(valor ?? "").trim();
+  if (!texto) return vazio;
 
-  const vazio = {
-    data: null,
-    dia: null,
-    mesNum: null,
-    mes: null,
-    ano: null,
-    timestamp: 0
-  };
-
-
-  if (
-    valor === null ||
-    valor === undefined ||
-    String(valor).trim() === ""
-  ) {
+  let dia, mes, ano;
+  const brasileira = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})(?=$|[ T])/);
+  const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})(?=$|[ T])/);
+  if (brasileira) {
+    [, dia, mes, ano] = brasileira.map(Number);
+    if (ano < 100) ano += 2000;
+  } else if (iso) {
+    [, ano, mes, dia] = iso.map(Number);
+  } else if (/^\d+(?:\.\d+)?$/.test(texto)) {
+    const serial = Number(texto);
+    if (serial <= 30000 || serial >= 2958466) return vazio;
+    // O serial representa um dia de calendário; UTC serve só para obter suas partes.
+    const calendario = new Date(Date.UTC(1899, 11, 30) + Math.floor(serial) * 86400000);
+    ano = calendario.getUTCFullYear();
+    mes = calendario.getUTCMonth() + 1;
+    dia = calendario.getUTCDate();
+  } else {
     return vazio;
   }
 
-
-  const texto =
-    String(valor).trim();
-
-
-  let data = null;
-
-
-  /* ================================================
-     DD/MM/YYYY
-     DD/MM/YYYY HH:mm:ss
-     ================================================ */
-
-  if (texto.includes("/")) {
-
-    const parteData =
-      texto.split(" ")[0];
-
-
-    const partes =
-      parteData.split("/");
-
-
-    if (partes.length === 3) {
-
-      const dia =
-        Number(partes[0]);
-
-      const mes =
-        Number(partes[1]);
-
-      let ano =
-        Number(partes[2]);
-
-
-      if (ano < 100) {
-        ano += 2000;
-      }
-
-
-      if (
-        dia > 0 &&
-        mes > 0 &&
-        mes <= 12 &&
-        ano > 0
-      ) {
-        data =
-          new Date(
-            ano,
-            mes - 1,
-            dia
-          );
-      }
-    }
-  }
-
-
-  /* ================================================
-     YYYY-MM-DD
-     YYYY-MM-DDTHH:mm:ss
-     ================================================ */
-
-  if (
-    !data &&
-    texto.includes("-")
-  ) {
-
-    const parteData =
-      texto.split("T")[0];
-
-
-    const partes =
-      parteData.split("-");
-
-
-    if (partes.length >= 3) {
-
-      const ano =
-        Number(partes[0]);
-
-      const mes =
-        Number(partes[1]);
-
-      const dia =
-        Number(partes[2]);
-
-
-      if (
-        dia > 0 &&
-        mes > 0 &&
-        mes <= 12 &&
-        ano > 0
-      ) {
-        data =
-          new Date(
-            ano,
-            mes - 1,
-            dia
-          );
-      }
-    }
-  }
-
-
-  /* ================================================
-     SERIAL GOOGLE SHEETS
-     ================================================ */
-
-  if (!data) {
-
-    const serial =
-      Number(texto);
-
-
-    if (
-      !Number.isNaN(serial) &&
-      serial > 30000
-    ) {
-
-      data =
-        new Date(
-          (serial - 25569) *
-          86400 *
-          1000
-        );
-    }
-  }
-
-
-  if (
-    !data ||
-    Number.isNaN(
-      data.getTime()
-    )
-  ) {
+  const data = new Date(0);
+  data.setFullYear(ano, mes - 1, dia);
+  data.setHours(0, 0, 0, 0);
+  if (!Number.isFinite(data.getTime()) ||
+      data.getFullYear() !== ano || data.getMonth() !== mes - 1 || data.getDate() !== dia) {
     return vazio;
   }
-
-
-  const mesNum =
-    data.getMonth() + 1;
-
-
   return {
-    data: data,
-
-    dia:
-      data.getDate(),
-
-    mesNum:
-      mesNum,
-
-    mes:
-      MESES_ORDEM[
-        mesNum - 1
-      ],
-
-    ano:
-      data.getFullYear(),
-
-    timestamp:
-      data.getTime()
+    data, dia, mesNum: mes, mes: MESES_ORDEM[mes - 1],
+    ano, timestamp: data.getTime()
   };
 }
-
-
-/* =====================================================
-   6. NORMALIZA OS DADOS
-
-   NOVA ESTRUTURA DA ABA:
-
-   A  Nº RRC
-   B  DATA/HORA REGISTRO
-   C  DATA OCORRÊNCIA
-   D  CLIENTE
-   E  CNPJ/CPF
-   F  CONTATO
-   G  CIDADE
-   H  ESTADO
-   I  VENDEDOR
-   J  REPRESENTANTE
-   K  NF
-   L  TRANSPORTADORA
-   M  DATA ENTREGA
-   N  DESCRIÇÃO PRODUTO
-   O  DESCRIÇÃO PROBLEMA
-   P  SETOR OCORRÊNCIA
-   Q  ERRO OCORRIDO
-   R  IMAGENS
-   S  HASH
-   ===================================================== */
 
 function normalizarDados(raw) {
-
-  if (
-    !Array.isArray(raw) ||
-    raw.length === 0
-  ) {
-
-    console.warn(
-      "Nenhuma linha encontrada no CSV."
-    );
-
-    return [];
-  }
-
-
-  console.log(
-    "Headers recebidos:",
-    Object.keys(raw[0])
-  );
-
-
-  const normalizados =
-    raw.map(function(r, index) {
-
-
-      /* ============================================
-         DATAS
-         ============================================ */
-
-      const dataOcorrenciaTexto =
-        obterCampo(
-          r,
-          [
-            "DATA OCORRÊNCIA",
-            "DATA OCORRENCIA"
-          ]
-        );
-
-
-      const dataRegistroTexto =
-        obterCampo(
-          r,
-          [
-            "DATA/HORA REGISTRO",
-            "DATA HORA REGISTRO"
-          ]
-        );
-
-
-      const dataEntregaTexto =
-        obterCampo(
-          r,
-          [
-            "DATA ENTREGA"
-          ]
-        );
-
-
-      const dataOcorrencia =
-        extrairDataInfo(
-          dataOcorrenciaTexto
-        );
-
-
-      const dataRegistro =
-        extrairDataInfo(
-          dataRegistroTexto
-        );
-
-
-      const dataEntrega =
-        extrairDataInfo(
-          dataEntregaTexto
-        );
-
-
-      /* ============================================
-         COMERCIAL
-         ============================================ */
-
-      const vendedor =
-        obterCampo(
-          r,
-          [
-            "VENDEDOR"
-          ]
-        );
-
-
-      const representante =
-        obterCampo(
-          r,
-          [
-            "REPRESENTANTE"
-          ]
-        );
-
-
-      const responsavelComercial =
-        vendedor ||
-        representante ||
-        "Não informado";
-
-
-      /* ============================================
-         Nº RRC
-         ============================================ */
-
-      const rrcTexto =
-        obterCampo(
-          r,
-          [
-            "Nº RRC",
-            "N° RRC",
-            "NUMERO RRC",
-            "RRC"
-          ]
-        );
-
-
-      const numeroSomente =
-        String(rrcTexto)
-          .replace(/[^\d]/g, "");
-
-
-      const rrcNumero =
-        Number(numeroSomente);
-
-
-      /* ============================================
-         OBJETO NORMALIZADO
-         ============================================ */
-
-      return {
-
-        /* CONTROLE */
-
-        indiceOriginal:
-          index,
-
-
-        /* IDENTIFICAÇÃO */
-
-        rrc:
-          Number.isFinite(rrcNumero) &&
-          rrcNumero > 0
-            ? rrcNumero
-            : rrcTexto,
-
-
-        /* DATAS TEXTO */
-
-        dataRegistroTexto:
-          dataRegistroTexto,
-
-        dataOcorrenciaTexto:
-          dataOcorrenciaTexto,
-
-        dataEntregaTexto:
-          dataEntregaTexto,
-
-
-        /* DATAS */
-
-        dataRegistro:
-          dataRegistro.data,
-
-        dataOcorrencia:
-          dataOcorrencia.data,
-
-        dataEntrega:
-          dataEntrega.data,
-
-
-        /* USADO PARA ORDENAÇÃO */
-
-        timestamp:
-          dataOcorrencia.timestamp ||
-          dataRegistro.timestamp ||
-          0,
-
-
-        dia:
-          dataOcorrencia.dia,
-
-
-        mesNum:
-          dataOcorrencia.mesNum,
-
-
-        mes:
-          dataOcorrencia.mes,
-
-
-        ano:
-          dataOcorrencia.ano,
-
-
-        /* CLIENTE */
-
-        cliente:
-          obterCampo(
-            r,
-            [
-              "CLIENTE"
-            ]
-          ),
-
-
-        cnpjCpf:
-          obterCampo(
-            r,
-            [
-              "CNPJ/CPF",
-              "CNPJ CPF"
-            ]
-          ),
-
-
-        contato:
-          obterCampo(
-            r,
-            [
-              "CONTATO"
-            ]
-          ),
-
-
-        cidade:
-          obterCampo(
-            r,
-            [
-              "CIDADE"
-            ]
-          ),
-
-
-        estado:
-          obterCampo(
-            r,
-            [
-              "ESTADO"
-            ]
-          ),
-
-
-        /* COMERCIAL */
-
-        vendedor:
-          vendedor,
-
-
-        representante:
-          representante,
-
-
-        responsavelComercial:
-          responsavelComercial,
-
-
-        /* DOCUMENTOS */
-
-        nf:
-          obterCampo(
-            r,
-            [
-              "NF"
-            ]
-          ),
-
-
-        transportadora:
-          obterCampo(
-            r,
-            [
-              "TRANSPORTADORA"
-            ]
-          ),
-
-
-        /* RECLAMAÇÃO */
-
-        produto:
-          obterCampo(
-            r,
-            [
-              "DESCRIÇÃO PRODUTO",
-              "DESCRICAO PRODUTO"
-            ]
-          ),
-
-
-        descricaoProblema:
-          obterCampo(
-            r,
-            [
-              "DESCRIÇÃO PROBLEMA",
-              "DESCRICAO PROBLEMA"
-            ]
-          ),
-
-
-        setor:
-          obterCampo(
-            r,
-            [
-              "SETOR OCORRÊNCIA",
-              "SETOR OCORRENCIA"
-            ]
-          ),
-
-
-        erro:
-          obterCampo(
-            r,
-            [
-              "ERRO OCORRIDO"
-            ]
-          ),
-
-
-        imagens:
-          obterCampo(
-            r,
-            [
-              "IMAGENS"
-            ]
-          ),
-
-
-        /* CADA LINHA = UMA RRC */
-
-        qtd: 1
-
-      };
-
-    })
-
-
-    /* ================================================
-       FILTRO DE LINHAS VÁLIDAS
-
-       Para ser considerada uma reclamação,
-       precisa ter Nº RRC ou Cliente.
-       ================================================ */
-
-    .filter(function(d) {
-
-      return (
-        String(
-          d.rrc || ""
-        ).trim() !== "" ||
-
-        String(
-          d.cliente || ""
-        ).trim() !== ""
-      );
-
+  if (!Array.isArray(raw)) return [];
+  const linhasVistas = new Set();
+  const dados = [];
+
+  raw.forEach((registro, indiceOriginal) => {
+    const rrcTexto = obterCampo(registro, ["Nº RRC", "N° RRC", "NUMERO RRC", "RRC"]);
+    const cliente = obterCampo(registro, ["CLIENTE"]);
+    if (!rrcTexto && !cliente) return;
+
+    // Remove somente repetições idênticas com RRC identificada.
+    // Mesmo número com produto/problema diferente continua sendo uma linha válida.
+    const assinatura = JSON.stringify(Object.entries(registro).sort(([a], [b]) => a.localeCompare(b)));
+    if (rrcTexto && linhasVistas.has(assinatura)) return;
+    if (rrcTexto) linhasVistas.add(assinatura);
+
+    const dataOcorrenciaTexto = obterCampo(registro, ["DATA OCORRÊNCIA"]);
+    const dataRegistroTexto = obterCampo(registro, ["DATA/HORA REGISTRO", "DATA HORA REGISTRO"]);
+    const dataEntregaTexto = obterCampo(registro, ["DATA ENTREGA"]);
+    const ocorrencia = extrairDataInfo(dataOcorrenciaTexto);
+    const registroData = extrairDataInfo(dataRegistroTexto);
+    const entrega = extrairDataInfo(dataEntregaTexto);
+    const dataReferencia = ocorrencia.data ? ocorrencia : registroData;
+    const vendedor = obterCampo(registro, ["VENDEDOR"]);
+    const representante = obterCampo(registro, ["REPRESENTANTE"]);
+
+    dados.push({
+      indiceOriginal,
+      rrc: /^\d+$/.test(rrcTexto) && Number.isSafeInteger(Number(rrcTexto))
+        ? Number(rrcTexto) : rrcTexto,
+      dataRegistroTexto, dataOcorrenciaTexto, dataEntregaTexto,
+      dataRegistro: registroData.data,
+      dataOcorrencia: ocorrencia.data,
+      dataEntrega: entrega.data,
+      timestamp: dataReferencia.timestamp,
+      dia: dataReferencia.dia,
+      mesNum: dataReferencia.mesNum,
+      mes: dataReferencia.mes,
+      ano: dataReferencia.ano,
+      cliente,
+      cnpjCpf: obterCampo(registro, ["CNPJ/CPF", "CNPJ CPF"]),
+      contato: obterCampo(registro, ["CONTATO"]),
+      cidade: obterCampo(registro, ["CIDADE"]),
+      estado: obterCampo(registro, ["ESTADO"]),
+      vendedor, representante,
+      responsavelComercial: getResponsavelComercial({ vendedor, representante }),
+      nf: obterCampo(registro, ["NF"]),
+      transportadora: obterCampo(registro, ["TRANSPORTADORA"]),
+      produto: obterCampo(registro, ["DESCRIÇÃO PRODUTO"]),
+      descricaoProblema: obterCampo(registro, ["DESCRIÇÃO PROBLEMA"]),
+      setor: obterCampo(registro, ["SETOR OCORRÊNCIA"]),
+      erro: obterCampo(registro, ["ERRO OCORRIDO"]),
+      imagens: obterCampo(registro, ["IMAGENS"]),
+      qtd: 1
     });
-
-
-  /* =====================================================
-     DEBUG
-     ===================================================== */
-
-  console.log(
-    "📊 Linhas CSV:",
-    raw.length
-  );
-
-
-  console.log(
-    "📊 Reclamações válidas:",
-    normalizados.length
-  );
-
-
-  console.log(
-    "📋 Dados normalizados:",
-    normalizados
-  );
-
-
-  /* =====================================================
-     VERIFICA DATAS INVÁLIDAS
-     ===================================================== */
-
-  const datasInvalidas =
-    normalizados.filter(
-      function(d) {
-
-        return (
-          d.ano === null ||
-          d.mesNum === null
-        );
-
-      }
-    );
-
-
-  if (
-    datasInvalidas.length > 0
-  ) {
-
-    console.warn(
-      "⚠️ Linhas com DATA OCORRÊNCIA inválida:",
-      datasInvalidas
-    );
-
-  }
-
-
-  /* =====================================================
-     ANOS ENCONTRADOS
-     ===================================================== */
-
-  const anosDisponiveis =
-    Array.from(
-      new Set(
-
-        normalizados
-          .map(function(d) {
-            return d.ano;
-          })
-
-          .filter(function(ano) {
-            return (
-              ano !== null &&
-              ano !== undefined
-            );
-          })
-
-      )
-    )
-
-    .sort(function(a, b) {
-      return b - a;
-    });
-
-
-  console.log(
-    "📅 Anos encontrados:",
-    anosDisponiveis
-  );
-
-
-  /* =====================================================
-     SETORES ENCONTRADOS
-     ===================================================== */
-
-  const setoresDisponiveis =
-    Array.from(
-      new Set(
-
-        normalizados
-          .map(function(d) {
-            return d.setor;
-          })
-
-          .filter(function(setor) {
-            return setor !== "";
-          })
-
-      )
-    )
-
-    .sort(function(a, b) {
-      return a.localeCompare(
-        b,
-        "pt-BR"
-      );
-    });
-
-
-  console.log(
-    "🏭 Setores encontrados:",
-    setoresDisponiveis
-  );
-
-
-  /* =====================================================
-     VENDEDORES
-     ===================================================== */
-
-  const vendedores =
-    Array.from(
-      new Set(
-
-        normalizados
-          .map(function(d) {
-            return d.vendedor;
-          })
-
-          .filter(function(valor) {
-            return valor !== "";
-          })
-
-      )
-    )
-
-    .sort(function(a, b) {
-      return a.localeCompare(
-        b,
-        "pt-BR"
-      );
-    });
-
-
-  console.log(
-    "👤 Vendedores encontrados:",
-    vendedores
-  );
-
-
-  /* =====================================================
-     REPRESENTANTES
-     ===================================================== */
-
-  const representantes =
-    Array.from(
-      new Set(
-
-        normalizados
-          .map(function(d) {
-            return d.representante;
-          })
-
-          .filter(function(valor) {
-            return valor !== "";
-          })
-
-      )
-    )
-
-    .sort(function(a, b) {
-      return a.localeCompare(
-        b,
-        "pt-BR"
-      );
-    });
-
-
-  console.log(
-    "🤝 Representantes encontrados:",
-    representantes
-  );
-
-
-  return normalizados;
+  });
+  return dados;
 }
-
-
-/* =====================================================
-   7. STATUS DA ATUALIZAÇÃO
-   ===================================================== */
 
 function atualizarStatusDados() {
-
-  const status =
-    document.getElementById(
-      "status"
-    );
-
-
-  if (!status) {
-    return;
-  }
-
-
-  const agora =
-    new Date();
-
-
-  const data =
-    agora.toLocaleDateString(
-      "pt-BR"
-    );
-
-
-  const hora =
-    agora.toLocaleTimeString(
-      "pt-BR",
-      {
-        hour: "2-digit",
-        minute: "2-digit"
-      }
-    );
-
-
-  status.textContent =
-    "Última atualização: " +
-    data +
-    " às " +
-    hora;
+  const status = document.getElementById("status");
+  if (!status || !ultimaAtualizacaoDados) return;
+  status.textContent = "Última atualização: " + ultimaAtualizacaoDados.toLocaleString("pt-BR", {
+    dateStyle: "short", timeStyle: "short"
+  });
 }
-
-
-/* =====================================================
-   8. LOAD PRINCIPAL
-   ===================================================== */
 
 async function carregarDados() {
+  if (carregamentoEmAndamento) return;
+  carregamentoEmAndamento = true;
+  const btn = document.getElementById("btnRefresh");
+  const status = document.getElementById("status");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
 
-  const btn =
-    document.getElementById(
-      "btnRefresh"
-    );
-
-
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Atualizando...";
+  }
   try {
-
-    /* ================================================
-       BOTÃO
-       ================================================ */
-
-    if (btn) {
-
-      btn.disabled = true;
-
-      btn.innerText =
-        "Atualizando...";
-
-    }
-
-
-    /* ================================================
-       EVITA CACHE
-       ================================================ */
-
-    const url =
-      CSV_URL +
-      (
-        CSV_URL.includes("?")
-          ? "&"
-          : "?"
-      ) +
-      "t=" +
-      new Date().getTime();
-
-
-    console.log(
-      "Buscando CSV:",
-      url
-    );
-
-
-    /* ================================================
-       FETCH
-       ================================================ */
-
-    const res =
-      await fetch(
-        url,
-        {
-          cache: "no-store"
-        }
-      );
-
-
-    if (!res.ok) {
-
-      throw new Error(
-        "Erro HTTP " +
-        res.status +
-        " ao carregar o CSV."
-      );
-
-    }
-
-
-    /* ================================================
-       CSV
-       ================================================ */
-
-    const csv =
-      await res.text();
-
-
-    if (!csv.trim()) {
-
-      throw new Error(
-        "O CSV retornou vazio."
-      );
-
-    }
-
-
-    console.log(
-      "CSV carregado com sucesso."
-    );
-
-
-    /* ================================================
-       CONVERTE
-       ================================================ */
-
-    const bruto =
-      csvToJson(csv);
-
-
-    console.log(
-      "JSON bruto:",
-      bruto
-    );
-
-
-    const dados =
-      normalizarDados(bruto);
-
-
-    /* ================================================
-       EXPORTA GLOBALMENTE
-       ================================================ */
-
-    window.DADOS_RC =
-      dados;
-
-
-    window.MESES_ORDEM =
-      MESES_ORDEM;
-
-
-    console.log(
-      "✅ Dados carregados corretamente"
-    );
-
-
-    /* ================================================
-       ATUALIZA DASHBOARD
-       ================================================ */
-
-    if (
-      typeof atualizarDashboard ===
-      "function"
-    ) {
-
-      atualizarDashboard();
-
-    }
-
-
-    /* ================================================
-       STATUS
-       ================================================ */
-
+    const url = new URL(CSV_URL);
+    url.searchParams.set("t", Date.now());
+    const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+    if (!res.ok) throw new Error("Erro HTTP " + res.status + " ao carregar o CSV.");
+    const csv = await res.text();
+    if (!csv.trim()) throw new Error("O CSV retornou vazio.");
+    const dados = normalizarDados(csvToJson(csv));
+    window.DADOS_RC = dados;
+    ultimaAtualizacaoDados = new Date();
+    atualizarDashboard();
     atualizarStatusDados();
-
-
-  } catch (e) {
-
-    console.error(
-      "❌ Erro ao carregar CSV:",
-      e
-    );
-
-
-    window.DADOS_RC = [];
-
-
-    const status =
-      document.getElementById(
-        "status"
-      );
-
-
+  } catch (erro) {
+    console.error("Erro ao carregar as reclamações:", erro);
+    const possuiDados = ultimaAtualizacaoDados !== null;
     if (status) {
-
-      status.textContent =
-        "Erro ao atualizar os dados";
-
+      status.textContent = possuiDados
+        ? "Falha na atualização. Exibindo os dados de " + ultimaAtualizacaoDados.toLocaleString("pt-BR") + "."
+        : "Não foi possível carregar os dados. Clique em Atualizar para tentar novamente.";
     }
-
-
-    /* Mesmo com erro,
-       permite o dashboard limpar os cards */
-
-    if (
-      typeof atualizarDashboard ===
-      "function"
-    ) {
-
+    // Falhas temporárias não apagam os dados nem as seleções já carregadas.
+    if (!possuiDados) {
+      window.DADOS_RC = [];
       atualizarDashboard();
-
     }
-
-
   } finally {
-
-    /* ================================================
-       LIBERA BOTÃO
-       ================================================ */
-
+    clearTimeout(timeout);
+    carregamentoEmAndamento = false;
     if (btn) {
-
       btn.disabled = false;
-
-      btn.innerText =
-        "Atualizar";
-
+      btn.textContent = "Atualizar";
     }
-
   }
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+  carregarDados();
+  document.getElementById("btnRefresh")?.addEventListener("click", carregarDados);
+});
 
-/* =====================================================
-   9. INICIALIZAÇÃO
-   ===================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-
-    /* ================================================
-       CARREGA AO ABRIR
-       ================================================ */
-
-    carregarDados();
-
-
-    /* ================================================
-       BOTÃO ATUALIZAR
-       ================================================ */
-
-    const btnRefresh =
-      document.getElementById(
-        "btnRefresh"
-      );
-
-
-    if (btnRefresh) {
-
-      btnRefresh.addEventListener(
-        "click",
-        function() {
-
-          carregarDados();
-
-        }
-      );
-
-    }
-
-  }
-);

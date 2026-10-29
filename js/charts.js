@@ -11,9 +11,6 @@
    - Responsável Comercial
    ===================================================== */
 
-console.log("charts.js carregado");
-
-
 /* =====================================================
    1. CONFIGURAÇÕES GERAIS
    ===================================================== */
@@ -21,26 +18,20 @@ console.log("charts.js carregado");
 const FONT_FAMILY =
   "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
 
-
 const TEXT_COLOR =
   "#374151";
-
 
 const TITLE_COLOR =
   "#111827";
 
-
 const GRID_COLOR =
   "#e5e7eb";
-
 
 const PRIMARY_COLOR =
   "#068147";
 
-
 const SECONDARY_COLOR =
   "#0B8043";
-
 
 const COLOR_PALETTE = [
   "#068147",
@@ -55,19 +46,17 @@ const COLOR_PALETTE = [
   "#ca8a04"
 ];
 
-
 /* =====================================================
    2. CONTROLE DOS GRÁFICOS
    ===================================================== */
 
 const charts = {};
 
-
 /* =====================================================
    3. REGISTRA O PLUGIN DATALABELS
    ===================================================== */
 
-if (window.ChartDataLabels) {
+if (window.Chart && window.ChartDataLabels) {
 
   Chart.register(
     ChartDataLabels
@@ -81,7 +70,6 @@ if (window.ChartDataLabels) {
 
 }
 
-
 /* =====================================================
    4. CONFIGURAÇÕES GLOBAIS
    ===================================================== */
@@ -91,12 +79,10 @@ if (window.Chart) {
   Chart.defaults.font.family =
     FONT_FAMILY;
 
-
   Chart.defaults.color =
     TEXT_COLOR;
 
 }
-
 
 /* =====================================================
    5. FORMATAÇÃO DE VALORES
@@ -112,7 +98,6 @@ function formatChartNumber(value) {
 
 }
 
-
 /* =====================================================
    6. OPÇÕES PADRÃO
    ===================================================== */
@@ -125,7 +110,6 @@ function getDefaultOptions(extra = {}) {
 
     maintainAspectRatio: false,
 
-
     /* ===============================================
        ANIMAÇÃO
        =============================================== */
@@ -135,7 +119,6 @@ function getDefaultOptions(extra = {}) {
       duration: 450
 
     },
-
 
     /* ===============================================
        INTERAÇÃO
@@ -148,7 +131,6 @@ function getDefaultOptions(extra = {}) {
       mode: "nearest"
 
     },
-
 
     /* ===============================================
        LAYOUT
@@ -171,13 +153,11 @@ function getDefaultOptions(extra = {}) {
 
     },
 
-
     /* ===============================================
        PLUGINS
        =============================================== */
 
     plugins: {
-
 
       /* ===========================================
          LEGENDA
@@ -207,7 +187,6 @@ function getDefaultOptions(extra = {}) {
 
       },
 
-
       /* ===========================================
          TOOLTIP
          =========================================== */
@@ -234,14 +213,12 @@ function getDefaultOptions(extra = {}) {
 
         displayColors: false,
 
-
         callbacks: {
 
           label: function(context) {
 
             const value =
               context.raw || 0;
-
 
             return (
               "Reclamações: " +
@@ -253,7 +230,6 @@ function getDefaultOptions(extra = {}) {
         }
 
       },
-
 
       /* ===========================================
          VALORES NOS GRÁFICOS
@@ -270,7 +246,6 @@ function getDefaultOptions(extra = {}) {
 
         clip: false,
 
-
         font: {
 
           weight: "bold",
@@ -278,7 +253,6 @@ function getDefaultOptions(extra = {}) {
           size: 10
 
         },
-
 
         formatter: function(value) {
 
@@ -290,7 +264,6 @@ function getDefaultOptions(extra = {}) {
             return "";
           }
 
-
           return formatChartNumber(
             value
           );
@@ -301,13 +274,11 @@ function getDefaultOptions(extra = {}) {
 
     },
 
-
     /* ===============================================
        ESCALAS
        =============================================== */
 
     scales: {
-
 
       /* ===========================================
          EIXO X
@@ -326,13 +297,11 @@ function getDefaultOptions(extra = {}) {
 
         },
 
-
         border: {
 
           display: false
 
         },
-
 
         ticks: {
 
@@ -348,7 +317,6 @@ function getDefaultOptions(extra = {}) {
         }
 
       },
-
 
       /* ===========================================
          EIXO Y
@@ -367,13 +335,11 @@ function getDefaultOptions(extra = {}) {
 
         },
 
-
         border: {
 
           display: false
 
         },
-
 
         ticks: {
 
@@ -396,14 +362,12 @@ function getDefaultOptions(extra = {}) {
 
   };
 
-
   return deepMerge(
     base,
     extra
   );
 
 }
-
 
 /* =====================================================
    7. MERGE DE OBJETOS
@@ -418,7 +382,6 @@ function deepMerge(target, source) {
     ...target
   };
 
-
   if (
     !source ||
     typeof source !== "object"
@@ -426,17 +389,14 @@ function deepMerge(target, source) {
     return output;
   }
 
-
   Object.keys(source)
     .forEach(function(key) {
 
       const valorSource =
         source[key];
 
-
       const valorTarget =
         output[key];
-
 
       if (
         valorSource &&
@@ -462,133 +422,41 @@ function deepMerge(target, source) {
 
     });
 
-
   return output;
 
 }
-
 
 /* =====================================================
    8. CRIA / ATUALIZA GRÁFICO COM SEGURANÇA
    ===================================================== */
 
-function createOrUpdateChart(
-  id,
-  config
-) {
-
-  const canvas =
-    document.getElementById(id);
-
-
-  if (!canvas) {
-
-    console.warn(
-      'Canvas "' +
-      id +
-      '" não encontrado.'
-    );
-
+function createOrUpdateChart(id, config) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  if (!window.Chart) {
+    const aviso = document.getElementById("avisoGraficos");
+    if (aviso) aviso.hidden = false;
     return null;
-
   }
-
-
-  if (
-    typeof Chart ===
-    "undefined"
-  ) {
-
-    console.error(
-      "Chart.js não foi carregado."
-    );
-
-    return null;
-
-  }
-
-
-  const ctx =
-    canvas.getContext("2d");
-
-
-  if (!ctx) {
-
-    console.warn(
-      'Contexto inválido para "' +
-      id +
-      '".'
-    );
-
-    return null;
-
-  }
-
-
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
   try {
-
-
-    /* ===============================================
-       DESTROI INSTÂNCIA ANTIGA
-       =============================================== */
-
-    if (charts[id]) {
-
-      charts[id].destroy();
-
-      delete charts[id];
-
+    const existente = charts[id] || Chart.getChart(canvas);
+    if (existente && existente.config.type === config.type) {
+      existente.data = config.data;
+      existente.options = config.options;
+      existente.update();
+      charts[id] = existente;
+    } else {
+      if (existente) existente.destroy();
+      charts[id] = new Chart(ctx, config);
     }
-
-
-    /* ===============================================
-       GARANTIA EXTRA
-
-       Caso exista alguma instância Chart associada
-       ao mesmo canvas.
-       =============================================== */
-
-    const instanciaExistente =
-      Chart.getChart(canvas);
-
-
-    if (instanciaExistente) {
-
-      instanciaExistente.destroy();
-
-    }
-
-
-    /* ===============================================
-       CRIA NOVO
-       =============================================== */
-
-    charts[id] =
-      new Chart(
-        ctx,
-        config
-      );
-
-
     return charts[id];
-
-
   } catch (erro) {
-
-    console.error(
-      'Erro ao renderizar gráfico "' +
-      id +
-      '":',
-      erro
-    );
-
-
+    console.error('Erro ao renderizar gráfico "' + id + '":', erro);
     return null;
-
   }
-
 }
-
 
 /* =====================================================
    9. DESTRÓI UM GRÁFICO
@@ -600,13 +468,11 @@ function destroyChart(id) {
     return;
   }
 
-
   charts[id].destroy();
 
   delete charts[id];
 
 }
-
 
 /* =====================================================
    10. DESTRÓI TODOS OS GRÁFICOS
@@ -622,7 +488,6 @@ function destroyAllCharts() {
     });
 
 }
-
 
 /* =====================================================
    11. GRÁFICO DE BARRAS VERTICAIS
@@ -641,19 +506,16 @@ function renderBarChart(
       ? data
       : [];
 
-
   createOrUpdateChart(
     id,
     {
 
       type: "bar",
 
-
       data: {
 
         labels:
           labels || [],
-
 
         datasets: [
 
@@ -689,7 +551,6 @@ function renderBarChart(
 
       },
 
-
       options:
         getDefaultOptions(
 
@@ -705,7 +566,6 @@ function renderBarChart(
 
                 },
 
-
                 datalabels: {
 
                   anchor:
@@ -720,7 +580,6 @@ function renderBarChart(
                 }
 
               },
-
 
               scales: {
 
@@ -753,7 +612,6 @@ function renderBarChart(
 
 }
 
-
 /* =====================================================
    12. BARRAS COM CORES DIFERENTES
    ===================================================== */
@@ -771,7 +629,6 @@ function renderColoredBarChart(
       ? data
       : [];
 
-
   const cores =
     valores.map(
       function(_, index) {
@@ -784,7 +641,6 @@ function renderColoredBarChart(
       }
     );
 
-
   createOrUpdateChart(
     id,
     {
@@ -792,12 +648,10 @@ function renderColoredBarChart(
       type:
         "bar",
 
-
       data: {
 
         labels:
           labels || [],
-
 
         datasets: [
 
@@ -832,7 +686,6 @@ function renderColoredBarChart(
         ]
 
       },
-
 
       options:
         getDefaultOptions(
@@ -877,7 +730,6 @@ function renderColoredBarChart(
 
 }
 
-
 /* =====================================================
    13. BARRA HORIZONTAL
 
@@ -899,7 +751,6 @@ function renderHorizontalBarChart(
       ? data
       : [];
 
-
   const cores =
     valores.map(
       function(_, index) {
@@ -912,7 +763,6 @@ function renderHorizontalBarChart(
       }
     );
 
-
   createOrUpdateChart(
     id,
     {
@@ -920,12 +770,10 @@ function renderHorizontalBarChart(
       type:
         "bar",
 
-
       data: {
 
         labels:
           labels || [],
-
 
         datasets: [
 
@@ -961,7 +809,6 @@ function renderHorizontalBarChart(
 
       },
 
-
       options:
         getDefaultOptions(
 
@@ -970,7 +817,6 @@ function renderHorizontalBarChart(
 
               indexAxis:
                 "y",
-
 
               layout: {
 
@@ -992,7 +838,6 @@ function renderHorizontalBarChart(
 
               },
 
-
               plugins: {
 
                 legend: {
@@ -1001,7 +846,6 @@ function renderHorizontalBarChart(
                     false
 
                 },
-
 
                 datalabels: {
 
@@ -1017,7 +861,6 @@ function renderHorizontalBarChart(
                 }
 
               },
-
 
               scales: {
 
@@ -1035,7 +878,6 @@ function renderHorizontalBarChart(
 
                 },
 
-
                 y: {
 
                   grid: {
@@ -1044,7 +886,6 @@ function renderHorizontalBarChart(
                       false
 
                   },
-
 
                   ticks: {
 
@@ -1077,7 +918,6 @@ function renderHorizontalBarChart(
 
 }
 
-
 /* =====================================================
    14. GRÁFICO DE LINHA
 
@@ -1097,7 +937,6 @@ function renderLineChart(
       ? data
       : [];
 
-
   createOrUpdateChart(
     id,
     {
@@ -1105,12 +944,10 @@ function renderLineChart(
       type:
         "line",
 
-
       data: {
 
         labels:
           labels || [],
-
 
         datasets: [
 
@@ -1158,7 +995,6 @@ function renderLineChart(
 
       },
 
-
       options:
         getDefaultOptions(
 
@@ -1175,7 +1011,6 @@ function renderLineChart(
 
               },
 
-
               plugins: {
 
                 legend: {
@@ -1184,7 +1019,6 @@ function renderLineChart(
                     false
 
                 },
-
 
                 datalabels: {
 
@@ -1201,7 +1035,6 @@ function renderLineChart(
 
               },
 
-
               scales: {
 
                 x: {
@@ -1214,7 +1047,6 @@ function renderLineChart(
                   }
 
                 },
-
 
                 y: {
 
@@ -1245,7 +1077,6 @@ function renderLineChart(
 
 }
 
-
 /* =====================================================
    15. GRÁFICO POR SETOR
 
@@ -1270,7 +1101,6 @@ function renderChartSetores(data) {
 
   }
 
-
   const contagem =
     typeof countBy === "function"
       ? countBy(
@@ -1278,7 +1108,6 @@ function renderChartSetores(data) {
           "setor"
         )
       : {};
-
 
   const ranking =
     typeof sortCountEntries ===
@@ -1290,7 +1119,6 @@ function renderChartSetores(data) {
           contagem
         );
 
-
   const labels =
     ranking.map(
       function(item) {
@@ -1298,14 +1126,12 @@ function renderChartSetores(data) {
       }
     );
 
-
   const valores =
     ranking.map(
       function(item) {
         return item[1];
       }
     );
-
 
   renderColoredBarChart(
     "chartSetores",
@@ -1315,7 +1141,6 @@ function renderChartSetores(data) {
   );
 
 }
-
 
 /* =====================================================
    16. GRÁFICO TOP CLIENTES
@@ -1344,7 +1169,6 @@ function renderChartClientes(
 
   }
 
-
   const ranking =
     typeof getRanking ===
       "function"
@@ -1355,7 +1179,6 @@ function renderChartClientes(
         )
       : [];
 
-
   const labels =
     ranking.map(
       function(item) {
@@ -1364,7 +1187,6 @@ function renderChartClientes(
 
       }
     );
-
 
   const valores =
     ranking.map(
@@ -1375,7 +1197,6 @@ function renderChartClientes(
       }
     );
 
-
   renderHorizontalBarChart(
     "chartClientes",
     labels,
@@ -1384,7 +1205,6 @@ function renderChartClientes(
   );
 
 }
-
 
 /* =====================================================
    17. GRÁFICO EVOLUÇÃO
@@ -1404,7 +1224,6 @@ function renderChartEvolucao(
 
   let labels = [];
   let valores = [];
-
 
   if (
     Array.isArray(
@@ -1430,24 +1249,10 @@ function renderChartEvolucao(
             data || []
           )
         : {
-            labels: [
-              "Jan",
-              "Fev",
-              "Mar",
-              "Abr",
-              "Mai",
-              "Jun",
-              "Jul",
-              "Ago",
-              "Set",
-              "Out",
-              "Nov",
-              "Dez"
-            ],
+            labels: MESES_ABREVIADOS,
             valores:
               Array(12).fill(0)
           };
-
 
     labels =
       serie.labels;
@@ -1456,7 +1261,6 @@ function renderChartEvolucao(
       serie.valores;
 
   }
-
 
   renderLineChart(
     "chartEvolucao",
@@ -1482,23 +1286,19 @@ function renderDashboardCharts(data) {
       ? data
       : [];
 
-
   renderChartSetores(
     dados
   );
 
-
   renderChartClientes(
     dados
   );
-
 
   renderChartEvolucao(
     dados
   );
 
 }
-
 
 /* =====================================================
    19. LIMPA TODOS OS GRÁFICOS
@@ -1514,54 +1314,4 @@ function clearDashboardCharts() {
 
 }
 
-
-/* =====================================================
-   20. EXPORTAÇÃO GLOBAL
-   ===================================================== */
-
-window.createOrUpdateChart =
-  createOrUpdateChart;
-
-
-window.destroyChart =
-  destroyChart;
-
-
-window.destroyAllCharts =
-  destroyAllCharts;
-
-
-window.renderBarChart =
-  renderBarChart;
-
-
-window.renderColoredBarChart =
-  renderColoredBarChart;
-
-
-window.renderHorizontalBarChart =
-  renderHorizontalBarChart;
-
-
-window.renderLineChart =
-  renderLineChart;
-
-
-window.renderChartSetores =
-  renderChartSetores;
-
-
-window.renderChartClientes =
-  renderChartClientes;
-
-
-window.renderChartEvolucao =
-  renderChartEvolucao;
-
-
-window.renderDashboardCharts =
-  renderDashboardCharts;
-
-
-window.clearDashboardCharts =
-  clearDashboardCharts;
+window.clearDashboardCharts = clearDashboardCharts;
